@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoiceForm AI — Smart Government Forms</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --saffron: #FF9933;
+  --saffron-light: #FFB347;
+  --saffron-dark: #E07A00;
+  --green: #138808;
+  --green-light: #1BAD3E;
+  --green-dark: #0A6006;
+  --navy: #1A2E6E;
+  --navy-light: #2A4A9E;
+  --navy-mid: #1E3580;
+  --white: #FFFFFF;
+  --cream: #FFF8EE;
+  --light: #F0F4FF;
+  --bg: #0E1628;
+  --bg2: #141E38;
+  --bg3: #1A2640;
+  --panel: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.08);
+  --border-light: rgba(255,255,255,0.12);
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  --radius: 16px;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'Noto Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: #E8EDF8;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Animated bg */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: 
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(255,153,51,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 90%, rgba(19,136,8,0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 60% 30%, rgba(26,46,110,0.2) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══ TOP NAV ═══ */
+.topnav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 32px;
+  height: 64px;
+  background: rgba(14,22,40,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.topnav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-head); font-size: 20px; font-weight: 800;
+  color: white; letter-spacing: -0.5px;
+}
+.topnav-logo .icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--saffron), #FF5500);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.topnav-logo span { color: var(--saffron); }
+.topnav-flag {
+  width: 80px; height: 5px; border-radius: 3px;
+  background: linear-gradient(to right, var(--saffron) 33%, white 33% 66%, var(--green) 66%);
+  margin-left: 4px; flex-shrink: 0;
+}
+.topnav-spacer { flex: 1; }
+.topnav-lang {
+  display: flex; gap: 6px;
+}
+.nav-lang-btn {
+  padding: 5px 12px; border-radius: 20px;
+  background: transparent; border: 1px solid var(--border-light);
+  color: rgba(255,255,255,0.6); font-size: 12px; font-family: var(--font-head); font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.nav-lang-btn:hover, .nav-lang-btn.active { background: rgba(255,153,51,0.15); border-color: var(--saffron); color: var(--saffron); }
+.topnav-badge {
+  padding: 5px 12px; border-radius: 20px;
+  background: rgba(19,136,8,0.15); border: 1px solid rgba(19,136,8,0.4);
+  color: #90EE90; font-size: 11px; font-family: var(--font-mono); font-weight: 600;
+  white-space: nowrap;
+}
+.topnav-accessibility {
+  display: flex; gap: 6px; align-items: center;
+}
+.acc-btn {
+  padding: 4px 10px; border-radius: 8px;
+  background: transparent; border: 1px solid var(--border-light);
+  color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer;
+  transition: all 0.2s; font-family: var(--font-body);
+}
+.acc-btn:hover { color: white; border-color: rgba(255,255,255,0.3); }
+.acc-btn.active { background: rgba(255,153,51,0.2); border-color: var(--saffron); color: var(--saffron); }
+
+/* ═══ LAYOUT ═══ */
+.app-layout {
+  display: flex;
+  padding-top: 64px;
+  min-height: 100vh;
+  position: relative; z-index: 1;
+}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar {
+  width: 260px; flex-shrink: 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; top: 64px; left: 0; bottom: 0;
+  overflow-y: auto; z-index: 50;
+}
+.sidebar-section {
+  padding: 20px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  color: rgba(255,255,255,0.3); text-transform: uppercase; margin-bottom: 10px;
+}
+.sidebar-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 10px;
+  cursor: pointer; transition: all 0.2s; margin-bottom: 3px;
+  color: rgba(255,255,255,0.5); font-size: 13px; font-weight: 600;
+  border: 1px solid transparent;
+}
+.sidebar-nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+.sidebar-nav-item.active {
+  background: linear-gradient(135deg, rgba(255,153,51,0.15), rgba(26,46,110,0.3));
+  border-color: rgba(255,153,51,0.3); color: var(--saffron);
+}
+.sidebar-nav-item .sni-icon { font-size: 18px; flex-shrink: 0; }
+.sidebar-nav-item .sni-badge {
+  margin-left: auto; background: var(--saffron); color: white;
+  font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px;
+}
+
+/* Language grid in sidebar */
+.lang-grid-sidebar {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+}
+.lang-card-s {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-light);
+  border-radius: 10px; padding: 8px 4px;
+  text-align: center; cursor: pointer; transition: all 0.2s;
+}
+.lang-card-s:hover, .lang-card-s.selected {
+  background: rgba(255,153,51,0.15); border-color: var(--saffron);
+}
+.lang-card-s .script { font-size: 18px; margin-bottom: 2px; }
+.lang-card-s .lnative { font-size: 10px; color: white; font-weight: 700; }
+.lang-card-s .lname { font-size: 9px; color: rgba(255,255,255,0.5); }
+
+/* Dialect */
+.dialect-row { display: flex; flex-wrap: wrap; gap: 5px; }
+.dialect-btn { 
+  padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border-light);
+  background: transparent; color: rgba(255,255,255,0.6); font-size: 10px;
+  cursor: pointer; font-family: var(--font-body); font-weight: 600; transition: all 0.2s;
+}
+.dialect-btn:hover, .dialect-btn.active { background: rgba(255,153,51,0.2); border-color: var(--saffron); color: var(--saffron); }
+
+/* ═══ MAIN CONTENT ═══ */
+.main-content {
+  margin-left: 260px; flex: 1; min-height: calc(100vh - 64px);
+  display: flex; flex-direction: column;
+}
+
+/* ═══ SCREENS ═══ */
+.screen { display: none; flex: 1; padding: 32px 36px; animation: fadeIn 0.3s ease; }
+.screen.active { display: flex; flex-direction: column; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ══ SCREEN HEADERS ══ */
+.screen-header {
+  margin-bottom: 28px;
+}
+.screen-header h1 {
+  font-family: var(--font-head); font-size: 32px; font-weight: 800;
+  color: white; line-height: 1.1; letter-spacing: -1px;
+}
+.screen-header h1 span { color: var(--saffron); }
+.screen-header p {
+  font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 6px; line-height: 1.6;
+}
+.screen-breadcrumb {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: rgba(255,255,255,0.3); margin-bottom: 8px;
+  font-family: var(--font-mono);
+}
+.screen-breadcrumb span { color: var(--saffron); }
+
+/* ═══════════════════════════════════
+   SCREEN 1: HOME / LANGUAGE SETUP
+═══════════════════════════════════ */
+.home-hero {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 32px;
+}
+.home-hero-left {
+  background: linear-gradient(135deg, var(--navy-mid) 0%, #0F1D4A 100%);
+  border: 1px solid rgba(255,153,51,0.2);
+  border-radius: 20px; padding: 36px;
+  position: relative; overflow: hidden;
+}
+.home-hero-left::before {
+  content: '🎙️';
+  position: absolute; right: 24px; bottom: 24px;
+  font-size: 80px; opacity: 0.06;
+}
+.home-hero-left h2 {
+  font-family: var(--font-head); font-size: 28px; font-weight: 800; color: white;
+  line-height: 1.2; margin-bottom: 12px;
+}
+.home-hero-left h2 span { color: var(--saffron); }
+.home-hero-left p { font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.7; margin-bottom: 24px; }
+.hero-stats { display: flex; gap: 20px; flex-wrap: wrap; }
+.hero-stat { text-align: center; }
+.hero-stat .num { font-family: var(--font-head); font-size: 28px; font-weight: 800; color: var(--saffron); }
+.hero-stat .lbl { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+.home-hero-right {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.feature-card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px;
+  display: flex; align-items: flex-start; gap: 14px;
+  transition: all 0.2s; cursor: default;
+}
+.feature-card:hover { background: rgba(255,255,255,0.06); border-color: var(--border-light); transform: translateX(4px); }
+.feature-card .fc-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+.feature-card .fc-title { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: white; margin-bottom: 3px; }
+.feature-card .fc-desc { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.5; }
+
+.home-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.home-actions { display: flex; flex-direction: column; gap: 12px; }
+.btn-primary-desk {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
+  color: white; border: none; border-radius: 12px;
+  font-family: var(--font-head); font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(255,153,51,0.3);
+}
+.btn-primary-desk:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,153,51,0.45); }
+.btn-secondary-desk {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 14px 24px;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border-light);
+  color: rgba(255,255,255,0.7); border-radius: 12px;
+  font-family: var(--font-head); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-secondary-desk:hover { background: rgba(255,255,255,0.1); color: white; }
+
+.accessibility-panel {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+}
+.acc-panel-title { font-family: var(--font-head); font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 14px; letter-spacing: 1px; text-transform: uppercase; }
+.acc-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ═══════════════════════════════════
+   SCREEN 2: FORM LIBRARY
+═══════════════════════════════════ */
+.library-toolbar {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.search-input {
+  flex: 1; min-width: 200px;
+  padding: 11px 18px;
+  background: var(--panel); border: 1px solid var(--border-light);
+  border-radius: 10px; color: white; font-size: 14px; font-family: var(--font-body);
+  outline: none; transition: all 0.2s;
+}
+.search-input:focus { border-color: var(--saffron); background: rgba(255,153,51,0.05); }
+.search-input::placeholder { color: rgba(255,255,255,0.3); }
+.cat-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.cat-tab {
+  padding: 7px 14px; border-radius: 20px;
+  background: var(--panel); border: 1px solid var(--border);
+  color: rgba(255,255,255,0.5); font-size: 12px; font-family: var(--font-head); font-weight: 600;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.cat-tab:hover { color: white; border-color: var(--border-light); }
+.cat-tab.active-cat { background: rgba(255,153,51,0.15); border-color: var(--saffron); color: var(--saffron); }
+
+.upload-drop-zone {
+  border: 2px dashed rgba(255,153,51,0.3);
+  border-radius: 14px; padding: 28px 32px;
+  text-align: center; background: rgba(255,153,51,0.03);
+  cursor: pointer; transition: all 0.2s; margin-bottom: 20px;
+}
+.upload-drop-zone:hover { border-color: var(--saffron); background: rgba(255,153,51,0.07); }
+.upload-drop-zone .udz-icon { font-size: 40px; margin-bottom: 8px; }
+.upload-drop-zone .udz-title { font-family: var(--font-head); font-size: 16px; font-weight: 700; color: white; margin-bottom: 4px; }
+.upload-drop-zone .udz-sub { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+.forms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.form-card-desk {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px 18px;
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer; transition: all 0.2s;
+}
+.form-card-desk:hover { background: rgba(255,153,51,0.07); border-color: rgba(255,153,51,0.35); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.fcd-icon { font-size: 28px; flex-shrink: 0; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.06); border-radius: 10px; }
+.fcd-info .fcd-name { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: white; margin-bottom: 3px; }
+.fcd-info .fcd-dept { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+.fcd-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.offline-badge { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; background: rgba(19,136,8,0.15); color: #90EE90; border: 1px solid rgba(19,136,8,0.3); }
+.deadline-badge { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; background: rgba(255,193,7,0.12); color: #FFC107; border: 1px solid rgba(255,193,7,0.3); }
+.fcd-arrow { margin-left: auto; color: rgba(255,255,255,0.2); font-size: 20px; flex-shrink: 0; }
+
+/* ═══════════════════════════════════
+   SCREEN 3: FORM PREVIEW
+═══════════════════════════════════ */
+.preview-layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; flex: 1; }
+.preview-main { display: flex; flex-direction: column; gap: 16px; }
+.preview-sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+.ocr-banner-desk {
+  background: linear-gradient(135deg, rgba(19,136,8,0.2), rgba(11,96,6,0.3));
+  border: 1px solid rgba(19,136,8,0.4);
+  border-radius: 14px; padding: 16px 20px;
+  display: flex; align-items: center; gap: 14px;
+}
+.ocr-banner-desk .ob-icon { font-size: 28px; }
+.ocr-banner-desk .ob-title { font-family: var(--font-head); font-size: 15px; font-weight: 700; color: #90EE90; margin-bottom: 2px; }
+.ocr-banner-desk .ob-sub { font-size: 12px; color: rgba(144,238,144,0.7); }
+
+.deadline-banner-desk {
+  display: none;
+  background: linear-gradient(135deg, rgba(255,193,7,0.1), rgba(255,152,0,0.1));
+  border: 1px solid rgba(255,193,7,0.3);
+  border-radius: 14px; padding: 14px 18px;
+}
+.deadline-banner-desk .db-title { font-family: var(--font-head); font-size: 13px; font-weight: 800; color: #FFC107; }
+.deadline-banner-desk .db-text { font-size: 14px; color: rgba(255,193,7,0.8); margin-top: 3px; }
+.deadline-banner-desk .db-days { font-size: 12px; color: rgba(255,193,7,0.5); margin-top: 2px; }
+
+.form-title-panel {
+  background: linear-gradient(135deg, var(--navy-mid), #0F1D4A);
+  border: 1px solid rgba(255,153,51,0.2);
+  border-radius: 14px; padding: 20px 24px;
+}
+.ftp-ministry { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+.ftp-name { font-family: var(--font-head); font-size: 22px; font-weight: 800; color: white; margin-bottom: 4px; }
+.ftp-id { font-family: var(--font-mono); font-size: 12px; color: rgba(255,255,255,0.35); }
+
+.fields-panel {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+}
+.fields-panel-title { font-family: var(--font-head); font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 14px; letter-spacing: 1px; text-transform: uppercase; }
+.field-item-desk {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 10px;
+  background: rgba(255,255,255,0.03); border: 1px solid transparent;
+  margin-bottom: 8px; transition: all 0.2s;
+}
+.field-item-desk.filled { background: rgba(19,136,8,0.08); border-color: rgba(19,136,8,0.3); }
+.fid-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--navy); color: white; font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.field-item-desk.filled .fid-num { background: var(--green); }
+.fid-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 2px; }
+.fid-value { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); }
+.fid-value.empty { color: rgba(255,255,255,0.2); font-style: italic; font-weight: 400; }
+.fid-check { margin-left: auto; font-size: 16px; }
+
+/* ═══════════════════════════════════
+   SCREEN 4: VOICE FILL (DESKTOP)
+═══════════════════════════════════ */
+.voice-layout { display: grid; grid-template-columns: 1fr 400px; gap: 28px; flex: 1; min-height: 0; }
+.voice-main { display: flex; flex-direction: column; gap: 20px; min-height: 0; }
+.voice-right { display: flex; flex-direction: column; gap: 16px; }
+
+/* Progress bar */
+.progress-panel {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px 22px;
+}
+.progress-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.progress-top .prog-title { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: white; }
+.progress-top .prog-pct { font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--saffron); }
+.progress-track-desk { height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+.progress-fill-desk { height: 100%; background: linear-gradient(to right, var(--saffron), var(--green)); border-radius: 4px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); width: 0%; }
+.progress-steps { display: flex; gap: 4px; margin-top: 10px; }
+.prog-step { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.08); transition: background 0.3s; }
+.prog-step.done { background: var(--green); }
+.prog-step.current { background: var(--saffron); }
+
+/* Question card */
+.question-card {
+  background: linear-gradient(135deg, var(--navy-mid), #0F1D4A);
+  border: 1px solid rgba(255,153,51,0.2);
+  border-radius: 18px; padding: 28px 32px;
+}
+.qc-label { font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; font-family: var(--font-mono); }
+.qc-english { font-family: var(--font-head); font-size: 26px; font-weight: 700; color: white; line-height: 1.3; margin-bottom: 8px; }
+.qc-native { font-size: 18px; color: rgba(255,255,255,0.7); margin-bottom: 6px; line-height: 1.4; }
+.qc-dialect { font-size: 14px; color: rgba(255,200,100,0.8); font-style: italic; }
+
+/* Mic area */
+.mic-area {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 18px; padding: 28px 32px;
+  display: flex; align-items: center; gap: 28px;
+}
+.mic-outer-desk {
+  position: relative; width: 90px; height: 90px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.mic-ripple-desk {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid var(--saffron); opacity: 0; animation: none;
+}
+.mic-outer-desk.listening .mic-ripple-desk:nth-child(1) { animation: ripple 1.5s ease-out infinite; }
+.mic-outer-desk.listening .mic-ripple-desk:nth-child(2) { animation: ripple 1.5s ease-out 0.5s infinite; }
+.mic-outer-desk.listening .mic-ripple-desk:nth-child(3) { animation: ripple 1.5s ease-out 1s infinite; }
+@keyframes ripple { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.2); opacity: 0; } }
+.mic-btn-desk {
+  width: 70px; height: 70px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--saffron), #FF5500);
+  border: none; cursor: pointer; font-size: 28px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 24px rgba(255,153,51,0.4);
+  z-index: 1; position: relative; transition: transform 0.15s;
+}
+.mic-btn-desk:active { transform: scale(0.92); }
+.mic-info { flex: 1; }
+.mic-status { font-family: var(--font-head); font-size: 16px; font-weight: 700; color: white; margin-bottom: 10px; }
+.wave-bars-desk { display: flex; align-items: center; gap: 4px; height: 28px; }
+.wave-bar-desk { width: 5px; background: var(--saffron); border-radius: 3px; height: 6px; transition: height 0.1s; opacity: 0.5; }
+.wave-bar-desk.active { animation: waved 0.6s ease-in-out infinite alternate; opacity: 1; }
+.wave-bar-desk.active:nth-child(2) { animation-delay: 0.1s; }
+.wave-bar-desk.active:nth-child(3) { animation-delay: 0.2s; }
+.wave-bar-desk.active:nth-child(4) { animation-delay: 0.15s; }
+.wave-bar-desk.active:nth-child(5) { animation-delay: 0.05s; }
+.wave-bar-desk.active:nth-child(6) { animation-delay: 0.25s; }
+.wave-bar-desk.active:nth-child(7) { animation-delay: 0.1s; }
+.wave-bar-desk.active:nth-child(8) { animation-delay: 0.18s; }
+.wave-bar-desk.active:nth-child(9) { animation-delay: 0.08s; }
+@keyframes waved { from { height: 6px; } to { height: 26px; } }
+.mic-realtime-text {
+  font-family: var(--font-mono); font-size: 12px; color: var(--saffron);
+  margin-top: 6px; min-height: 18px; font-style: italic;
+}
+
+/* Answer input area */
+.answer-area { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+.answer-label { font-size: 11px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-family: var(--font-mono); }
+.answer-input-desk {
+  width: 100%; padding: 14px 18px;
+  background: rgba(255,255,255,0.06); border: 1.5px solid var(--border-light);
+  border-radius: 10px; color: white; font-size: 18px; font-family: var(--font-head); font-weight: 600;
+  outline: none; transition: all 0.2s;
+}
+.answer-input-desk:focus { border-color: var(--saffron); background: rgba(255,153,51,0.06); }
+.answer-input-desk::placeholder { color: rgba(255,255,255,0.2); font-weight: 400; font-size: 15px; }
+.val-bar-desk { height: 3px; border-radius: 2px; margin-top: 6px; background: rgba(255,255,255,0.08); transition: background 0.3s; }
+.val-bar-desk.ok { background: var(--green); }
+.val-bar-desk.err { background: #FF4444; }
+.val-msg-desk { font-size: 12px; margin-top: 6px; min-height: 18px; font-weight: 600; color: rgba(255,255,255,0.5); line-height: 1.4; }
+.val-msg-desk.ok { color: #90EE90; }
+.val-msg-desk.err { color: #FF8080; }
+.char-counter-desk { font-size: 11px; color: rgba(255,255,255,0.2); text-align: right; margin-top: 4px; font-family: var(--font-mono); }
+
+/* Action buttons row */
+.voice-action-row { display: flex; gap: 10px; }
+.vab { 
+  flex: 1; padding: 12px; border-radius: 10px; font-family: var(--font-head); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; border: 1px solid var(--border-light); text-align: center;
+}
+.vab-skip { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); }
+.vab-skip:hover { color: white; background: rgba(255,255,255,0.1); }
+.vab-replay { background: rgba(255,153,51,0.1); color: var(--saffron); border-color: rgba(255,153,51,0.3); }
+.vab-replay:hover { background: rgba(255,153,51,0.2); }
+.vab-confirm { flex: 1.5; background: var(--green); color: white; border-color: transparent; opacity: 0.4; transition: all 0.2s; }
+.vab-confirm:not(:disabled) { opacity: 1; }
+.vab-confirm:hover:not(:disabled) { background: var(--green-dark); transform: translateY(-1px); }
+
+/* Voice right panel — field tracker */
+.field-tracker { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+.ft-title { font-family: var(--font-head); font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+.ft-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
+  margin-bottom: 5px; background: rgba(255,255,255,0.02); border: 1px solid transparent;
+  transition: all 0.2s;
+}
+.ft-item.current { background: rgba(255,153,51,0.1); border-color: rgba(255,153,51,0.3); }
+.ft-item.done { background: rgba(19,136,8,0.08); border-color: rgba(19,136,8,0.2); }
+.ft-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ft-item.current .ft-num { background: var(--saffron); color: white; }
+.ft-item.done .ft-num { background: var(--green); color: white; }
+.ft-label { font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 600; }
+.ft-item.current .ft-label { color: var(--saffron); }
+.ft-item.done .ft-label { color: rgba(255,255,255,0.7); }
+.ft-val { margin-left: auto; font-size: 11px; font-family: var(--font-mono); color: rgba(255,255,255,0.3); max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ft-item.done .ft-val { color: #90EE90; }
+
+/* Mic guide modal */
+.mic-guide-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+  z-index: 200; align-items: center; justify-content: center;
+}
+.mic-guide-overlay.active { display: flex; }
+.mic-guide-modal {
+  background: var(--bg2); border: 1px solid var(--border-light);
+  border-radius: 20px; padding: 32px; max-width: 480px; width: 90%;
+}
+.mgm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.mgm-header h3 { font-family: var(--font-head); font-size: 18px; font-weight: 800; color: white; }
+.mgm-close { background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; }
+.mgm-step { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.mgm-step:last-child { border-bottom: none; }
+.mgm-step-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,153,51,0.2); border: 1px solid var(--saffron); color: var(--saffron); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.mgm-step-title { font-family: var(--font-head); font-size: 13px; font-weight: 700; color: white; margin-bottom: 3px; }
+.mgm-step-text { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+.mgm-btns { display: flex; gap: 10px; margin-top: 20px; }
+
+/* Realtime live transcript panel */
+.live-panel {
+  background: rgba(255,153,51,0.04); border: 1px solid rgba(255,153,51,0.15);
+  border-radius: 12px; padding: 14px 16px;
+}
+.live-panel-title { font-size: 10px; font-weight: 700; color: rgba(255,153,51,0.6); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--saffron); animation: pulse-dot 1s infinite; display: none; }
+.live-dot.active { display: inline-block; }
+@keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.live-transcript { font-family: var(--font-mono); font-size: 13px; color: rgba(255,255,255,0.6); min-height: 40px; line-height: 1.6; }
+.live-transcript em { color: var(--saffron); font-style: normal; }
+
+/* ═══════════════════════════════════
+   SCREEN 5: REVIEW
+═══════════════════════════════════ */
+.review-layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; flex: 1; }
+.re-input-desk {
+  width: 100%; padding: 10px 14px;
+  background: rgba(255,255,255,0.05); border: 1.5px solid var(--border-light);
+  border-radius: 8px; color: white; font-size: 14px; font-family: var(--font-body);
+  outline: none; transition: all 0.2s; margin-top: 5px;
+}
+.re-input-desk:focus { border-color: var(--saffron); background: rgba(255,153,51,0.05); }
+.re-input-desk.ok { border-color: rgba(19,136,8,0.5); background: rgba(19,136,8,0.05); }
+.re-input-desk.err { border-color: rgba(255,68,68,0.5); background: rgba(255,68,68,0.03); }
+.review-field-block {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 18px; margin-bottom: 10px; transition: all 0.2s;
+}
+.review-field-block:hover { border-color: var(--border-light); }
+.rfb-label { font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 600; margin-bottom: 2px; }
+
+/* SMS panel */
+.sms-panel {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+}
+.sms-panel-title { font-family: var(--font-head); font-size: 14px; font-weight: 800; color: white; margin-bottom: 6px; }
+.sms-panel-desc { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 14px; }
+.sms-input {
+  width: 100%; padding: 11px 14px;
+  background: rgba(255,255,255,0.06); border: 1.5px solid var(--border-light);
+  border-radius: 8px; color: white; font-size: 15px; font-family: var(--font-mono);
+  outline: none; transition: all 0.2s; margin-bottom: 8px;
+}
+.sms-input:focus { border-color: var(--saffron); }
+.sms-btns { display: flex; gap: 6px; margin-bottom: 10px; }
+.sms-btn {
+  flex: 1; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-light); color: rgba(255,255,255,0.5);
+  font-size: 11px; cursor: pointer; transition: all 0.2s; font-family: var(--font-body); text-align: center;
+}
+.sms-btn:hover { color: white; border-color: var(--border-light); }
+.sms-btn.active-sms { background: rgba(26,46,110,0.4); border-color: var(--saffron); color: var(--saffron); font-weight: 700; }
+.sms-register-btn {
+  width: 100%; padding: 11px; background: var(--navy);
+  border: none; border-radius: 8px; color: white;
+  font-family: var(--font-head); font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.sms-register-btn:hover { background: var(--navy-light); }
+
+.submit-area {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+}
+.submit-note-desk {
+  background: rgba(255,153,51,0.06); border: 1px solid rgba(255,153,51,0.2);
+  border-radius: 10px; padding: 12px 14px; font-size: 12px; color: rgba(255,153,51,0.8);
+  margin-bottom: 14px; display: flex; gap: 8px;
+}
+.btn-submit-desk {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  border: none; border-radius: 12px;
+  font-family: var(--font-head); font-size: 16px; font-weight: 700; color: white;
+  cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 20px rgba(19,136,8,0.3);
+}
+.btn-submit-desk:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(19,136,8,0.45); }
+.review-errors { margin-top: 10px; }
+
+/* ═══════════════════════════════════
+   SCREEN 6: SUCCESS
+═══════════════════════════════════ */
+.success-layout { display: grid; grid-template-columns: 1fr 400px; gap: 32px; flex: 1; }
+.success-main {
+  background: linear-gradient(160deg, var(--navy-mid), #0A1530);
+  border: 1px solid rgba(255,153,51,0.2);
+  border-radius: 20px; padding: 48px;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  position: relative; overflow: hidden;
+}
+.success-main::before {
+  content: ''; position: absolute; inset: 0;
+  background: 
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,153,51,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 50% 100%, rgba(19,136,8,0.08) 0%, transparent 70%);
+}
+.success-circle-desk {
+  width: 100px; height: 100px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; color: white; font-weight: 800;
+  box-shadow: 0 0 60px rgba(19,136,8,0.4);
+  margin-bottom: 24px; position: relative;
+  animation: popIn 0.5s cubic-bezier(0.18,1.5,0.5,1) forwards;
+  opacity: 0; transform: scale(0.5);
+}
+@keyframes popIn { to { opacity: 1; transform: scale(1); } }
+.success-title-desk { font-family: var(--font-head); font-size: 36px; font-weight: 800; color: white; margin-bottom: 10px; position: relative; }
+.success-sub-desk { font-size: 16px; color: rgba(255,255,255,0.5); margin-bottom: 28px; position: relative; }
+.ref-box-desk {
+  background: rgba(255,153,51,0.1); border: 1px solid rgba(255,153,51,0.3);
+  border-radius: 16px; padding: 20px 32px; margin-bottom: 28px; position: relative;
+}
+.rbd-label { font-size: 10px; color: rgba(255,153,51,0.5); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px; }
+.rbd-num { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--saffron); letter-spacing: 2px; }
+
+.status-tracker-desk { width: 100%; position: relative; }
+.status-step-desk { display: flex; align-items: flex-start; gap: 14px; position: relative; }
+.std-dot {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.3);
+}
+.std-dot.done { background: var(--green); border-color: var(--green); color: white; }
+.std-dot.active { background: rgba(255,153,51,0.2); border-color: var(--saffron); color: var(--saffron); animation: spin 2s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.std-content { flex: 1; padding-bottom: 20px; }
+.std-title { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 3px; }
+.std-sub { font-size: 12px; color: rgba(255,255,255,0.3); }
+.std-line { width: 2px; height: 20px; background: rgba(255,255,255,0.08); margin-left: 15px; }
+.std-line.done { background: var(--green); }
+
+.success-right { display: flex; flex-direction: column; gap: 16px; }
+.summary-panel {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px; flex: 1;
+}
+.summary-panel-title { font-family: var(--font-head); font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+.summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.summary-row:last-child { border-bottom: none; }
+.sr-label { color: rgba(255,255,255,0.3); }
+.sr-val { color: white; font-weight: 700; font-family: var(--font-mono); font-size: 12px; text-align: right; max-width: 55%; word-break: break-all; }
+
+/* ═══ STEP WIZARD NAV (bottom) ═══ */
+.wizard-nav {
+  position: fixed; bottom: 0; left: 260px; right: 0; z-index: 50;
+  background: rgba(14,22,40,0.95); backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  padding: 12px 36px;
+  display: flex; align-items: center; gap: 12px;
+}
+.wn-step {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 20px;
+  background: transparent; border: 1px solid transparent;
+  cursor: pointer; transition: all 0.2s;
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.3);
+}
+.wn-step:hover { color: rgba(255,255,255,0.6); }
+.wn-step.active { background: rgba(255,153,51,0.12); border-color: rgba(255,153,51,0.3); color: var(--saffron); }
+.wn-step.done { color: #90EE90; }
+.wn-sep { color: rgba(255,255,255,0.15); font-size: 12px; }
+.wn-step .ws-num { width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.1); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.wn-step.active .ws-num { background: var(--saffron); color: white; }
+.wn-step.done .ws-num { background: var(--green); color: white; }
+
+/* misc */
+.divider-or { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.2); font-size: 12px; margin: 8px 0; }
+.divider-or::before, .divider-or::after { content:''; flex:1; height:1px; background:var(--border); }
+.upload-preview { display:none; background:rgba(19,136,8,0.1); border:1px solid rgba(19,136,8,0.3); border-radius:10px; padding:12px 16px; font-size:13px; color:#90EE90; margin-bottom:14px; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+/* high contrast */
+body.high-contrast { filter: contrast(1.4) brightness(1.1); }
+
+/* font sizes */
+body.font-large { font-size: 115%; }
+body.font-xl { font-size: 130%; }
+
+/* bottom padding for wizard nav */
+.screen { padding-bottom: 80px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP NAV ═══ -->
+<nav class="topnav">
+  <div class="topnav-logo">
+    <div class="icon">🎙️</div>
+    Voice<span>Form</span> AI
+    <div class="topnav-flag"></div>
+  </div>
+  <div class="topnav-spacer"></div>
+  <!-- Lang switcher -->
+  <div class="topnav-lang" id="topnav-langs">
+    <button class="nav-lang-btn active" onclick="selectLang(this,'Hindi')">हिंदी</button>
+    <button class="nav-lang-btn" onclick="selectLang(this,'Tamil')">தமிழ்</button>
+    <button class="nav-lang-btn" onclick="selectLang(this,'Bengali')">বাংলা</button>
+    <button class="nav-lang-btn" onclick="selectLang(this,'Telugu')">తెలుగు</button>
+    <button class="nav-lang-btn" onclick="selectLang(this,'Marathi')">मराठी</button>
+    <button class="nav-lang-btn" onclick="selectLang(this,'Kannada')">ಕನ್ನಡ</button>
+  </div>
+  <!-- Accessibility -->
+  <div class="topnav-accessibility" style="margin-left:16px;">
+    <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:600;margin-right:2px;">♿</span>
+    <button class="acc-btn active" onclick="setFontSize('normal')" id="fs-normal">A</button>
+    <button class="acc-btn" onclick="setFontSize('large')" id="fs-large" style="font-size:14px;">A+</button>
+    <button class="acc-btn" onclick="setFontSize('xl')" id="fs-xl" style="font-size:16px;">A++</button>
+    <button class="acc-btn" onclick="toggleContrast()" id="contrast-btn">◑</button>
+  </div>
+  <div class="topnav-badge" style="margin-left:12px;">✅ OFFLINE READY</div>
+</nav>
+
+<!-- ═══ LAYOUT ═══ -->
+<div class="app-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Navigation</div>
+      <div class="sidebar-nav-item active" id="snav-1" onclick="goTo(1)"><span class="sni-icon">🏠</span> Home</div>
+      <div class="sidebar-nav-item" id="snav-2" onclick="goTo(2)"><span class="sni-icon">📚</span> Form Library <span class="sni-badge">20</span></div>
+      <div class="sidebar-nav-item" id="snav-3" onclick="goTo(3)"><span class="sni-icon">🔍</span> Form Preview</div>
+      <div class="sidebar-nav-item" id="snav-4" onclick="startVoiceFill()"><span class="sni-icon">🎙️</span> Voice Fill</div>
+      <div class="sidebar-nav-item" id="snav-5" onclick="goTo(5)"><span class="sni-icon">📋</span> Review</div>
+      <div class="sidebar-nav-item" id="snav-6" onclick="goTo(6)"><span class="sni-icon">✅</span> Submitted</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Language</div>
+      <div class="lang-grid-sidebar" id="sidebar-lang-grid">
+        <div class="lang-card-s selected" onclick="selectLang2(this,'Hindi')"><div class="script">अ</div><div class="lnative">हिंदी</div><div class="lname">Hindi</div></div>
+        <div class="lang-card-s" onclick="selectLang2(this,'Tamil')"><div class="script">அ</div><div class="lnative">தமிழ்</div><div class="lname">Tamil</div></div>
+        <div class="lang-card-s" onclick="selectLang2(this,'Bengali')"><div class="script">অ</div><div class="lnative">বাংলা</div><div class="lname">Bengali</div></div>
+        <div class="lang-card-s" onclick="selectLang2(this,'Telugu')"><div class="script">అ</div><div class="lnative">తెలుగు</div><div class="lname">Telugu</div></div>
+        <div class="lang-card-s" onclick="selectLang2(this,'Marathi')"><div class="script">म</div><div class="lnative">मराठी</div><div class="lname">Marathi</div></div>
+        <div class="lang-card-s" onclick="selectLang2(this,'Kannada')"><div class="script">ಅ</div><div class="lnative">ಕನ್ನಡ</div><div class="lname">Kannada</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">🗣️ Dialect / Variant</div>
+      <div class="dialect-row" id="dialect-options"></div>
+      <div id="dialect-desc" style="font-size:10px;color:rgba(255,200,100,0.8);margin-top:6px;"></div>
+    </div>
+
+    <div class="sidebar-section" style="flex:1;">
+      <div class="sidebar-label">Mic Status</div>
+      <div id="mic-badge-sidebar" style="font-size:12px;color:rgba(255,255,255,0.4);cursor:pointer;" onclick="showMicGuide()">🎙️ Enable Microphone</div>
+      <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.25);">Real-time voice recognition with live transcription and multilingual support.</div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main-content">
+
+    <!-- ══ S1: HOME ══ -->
+    <div class="screen active" id="s1">
+      <div class="screen-header">
+        <div class="screen-breadcrumb">VoiceForm AI <span>/ Home</span></div>
+        <h1>Smart Government <span>Forms</span></h1>
+        <p id="s1-tagline">Government forms in your language. Speak or type — validated in real time.</p>
+      </div>
+      <div class="home-hero">
+        <div class="home-hero-left">
+          <h2>Fill Any Govt Form<br>in <span>Your Language</span></h2>
+          <p>Use your voice or keyboard to fill 20+ government forms with real-time validation. Available in 6 languages with dialect support. Works offline.</p>
+          <div class="hero-stats">
+            <div class="hero-stat"><div class="num">20+</div><div class="lbl">Forms</div></div>
+            <div class="hero-stat"><div class="num">6</div><div class="lbl">Languages</div></div>
+            <div class="hero-stat"><div class="num">100%</div><div class="lbl">Offline</div></div>
+            <div class="hero-stat"><div class="num">∞</div><div class="lbl">Free</div></div>
+          </div>
+        </div>
+        <div class="home-hero-right">
+          <div class="feature-card"><div class="fc-icon">🎙️</div><div><div class="fc-title">Real-Time Voice Input</div><div class="fc-desc">Speak naturally in your language. Live transcription as you speak with instant validation.</div></div></div>
+          <div class="feature-card"><div class="fc-icon">📶</div><div><div class="fc-title">Fully Offline</div><div class="fc-desc">All 20 forms cached locally. Works without internet after first load.</div></div></div>
+          <div class="feature-card"><div class="fc-icon">✅</div><div><div class="fc-title">Smart Validation</div><div class="fc-desc">Aadhaar, PAN, mobile, DOB validated with context-aware error messages.</div></div></div>
+        </div>
+      </div>
+      <div class="home-bottom">
+        <div class="home-actions">
+          <button class="btn-primary-desk" id="s1-main-btn" onclick="goTo(2)">📄 Browse & Select a Form →</button>
+          <button class="btn-secondary-desk" id="s1-camera-btn" onclick="goTo(2)">📷 Upload / Scan a Form</button>
+        </div>
+        <div class="accessibility-panel">
+          <div class="acc-panel-title">♿ Accessibility Options</div>
+          <div class="acc-row">
+            <button class="acc-btn active" onclick="setFontSize('normal')" id="fsa-normal">A Normal</button>
+            <button class="acc-btn" onclick="setFontSize('large')" id="fsa-large" style="font-size:14px;">A Large</button>
+            <button class="acc-btn" onclick="setFontSize('xl')" id="fsa-xl" style="font-size:16px;">A Elderly</button>
+            <button class="acc-btn" onclick="toggleContrast()" id="contrast-btn2">◑ High Contrast</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ S2: FORM LIBRARY ══ -->
+    <div class="screen" id="s2">
+      <div class="screen-header">
+        <div class="screen-breadcrumb">VoiceForm AI <span>/ Form Library</span></div>
+        <h1>Form <span>Library</span></h1>
+        <p>Browse 20 government forms — all cached offline. Upload your own PDF or image.</p>
+      </div>
+      <input type="file" id="real-file-input" accept=".pdf,image/*" style="display:none;" onchange="handleFileUpload(event)">
+      <div class="upload-drop-zone" onclick="document.getElementById('real-file-input').click()">
+        <div class="udz-icon">📤</div>
+        <div class="udz-title" id="upload-title">Upload Scanned PDF / Image</div>
+        <div class="udz-sub" id="upload-sub">Click to choose a file — PDF, JPG, PNG supported</div>
+        <div style="margin-top:14px;"><span style="display:inline-block;background:var(--saffron);color:white;padding:9px 22px;border-radius:10px;font-family:var(--font-head);font-size:13px;font-weight:700;cursor:pointer;">📂 Choose File</span></div>
+      </div>
+      <div class="upload-preview" id="upload-preview">✅ <strong>File selected:</strong> <span id="upload-filename"></span></div>
+      <div class="divider-or">OR choose from library</div>
+      <div class="library-toolbar">
+        <input type="text" class="search-input" id="form-search" placeholder="🔍 Search forms by name or department…" oninput="filterForms(this.value)">
+        <div class="cat-tabs">
+          <button class="cat-tab active-cat" onclick="filterCat('all')" id="cat-all">All 20</button>
+          <button class="cat-tab" onclick="filterCat('identity')" id="cat-identity">🪪 Identity</button>
+          <button class="cat-tab" onclick="filterCat('welfare')" id="cat-welfare">🌾 Welfare</button>
+          <button class="cat-tab" onclick="filterCat('health')" id="cat-health">🏥 Health</button>
+          <button class="cat-tab" onclick="filterCat('land')" id="cat-land">🏠 Land</button>
+          <button class="cat-tab" onclick="filterCat('finance')" id="cat-finance">💰 Finance</button>
+        </div>
+      </div>
+      <div class="forms-grid" id="forms-list"></div>
+    </div>
+
+    <!-- ══ S3: FORM PREVIEW ══ -->
+    <div class="screen" id="s3">
+      <div class="screen-header">
+        <div class="screen-breadcrumb">VoiceForm AI <span>/ Form Preview</span></div>
+        <h1 id="s3-form-title">Form <span>Preview</span></h1>
+        <p>Fields detected & ready for voice or text fill</p>
+      </div>
+      <div class="preview-layout">
+        <div class="preview-main">
+          <div class="ocr-banner-desk">
+            <div class="ob-icon">✅</div>
+            <div><div class="ob-title" id="ocr-success-text">Form Cached Offline</div><div class="ob-sub" id="ocr-sub-text">6 fields detected</div></div>
+          </div>
+          <div class="deadline-banner-desk" id="deadline-banner">
+            <div class="db-title">⏰ DEADLINE REMINDER</div>
+            <div class="db-text" id="deadline-text"></div>
+            <div class="db-days" id="deadline-days"></div>
+          </div>
+          <div class="form-title-panel">
+            <div class="ftp-ministry" id="s3-ministry">MINISTRY, GOVT. OF INDIA</div>
+            <div class="ftp-name" id="s3-form-full">Form</div>
+            <div class="ftp-id" id="s3-form-id">Form ID: —</div>
+          </div>
+          <div class="fields-panel">
+            <div class="fields-panel-title">Fields to Fill</div>
+            <div class="field-item-desk" id="fi-1"><div class="fid-num" id="fn-1">1</div><div style="flex:1"><div class="fid-label" id="flabel-1">Full Name</div><div class="fid-value empty" id="fv-1">Not filled</div></div><div class="fid-check" id="fc-1">○</div></div>
+            <div class="field-item-desk" id="fi-2"><div class="fid-num" id="fn-2">2</div><div style="flex:1"><div class="fid-label" id="flabel-2">Aadhaar Number</div><div class="fid-value empty" id="fv-2">Not filled</div></div><div class="fid-check" id="fc-2">○</div></div>
+            <div class="field-item-desk" id="fi-3"><div class="fid-num" id="fn-3">3</div><div style="flex:1"><div class="fid-label" id="flabel-3">Village / City</div><div class="fid-value empty" id="fv-3">Not filled</div></div><div class="fid-check" id="fc-3">○</div></div>
+            <div class="field-item-desk" id="fi-4"><div class="fid-num" id="fn-4">4</div><div style="flex:1"><div class="fid-label" id="flabel-4">Date of Birth</div><div class="fid-value empty" id="fv-4">Not filled</div></div><div class="fid-check" id="fc-4">○</div></div>
+            <div class="field-item-desk" id="fi-5"><div class="fid-num" id="fn-5">5</div><div style="flex:1"><div class="fid-label" id="flabel-5">Bank Account</div><div class="fid-value empty" id="fv-5">Not filled</div></div><div class="fid-check" id="fc-5">○</div></div>
+            <div class="field-item-desk" id="fi-6"><div class="fid-num" id="fn-6">6</div><div style="flex:1"><div class="fid-label" id="flabel-6">Mobile Number</div><div class="fid-value empty" id="fv-6">Not filled</div></div><div class="fid-check" id="fc-6">○</div></div>
+          </div>
+          <button class="btn-primary-desk" id="start-voice-btn" onclick="startVoiceFill()">🎙️ Start Voice Filling →</button>
+        </div>
+        <div class="preview-sidebar">
+          <div class="fields-panel">
+            <div class="fields-panel-title">Quick Actions</div>
+            <button class="btn-primary-desk" onclick="startVoiceFill()" style="margin-bottom:10px;font-size:14px;padding:12px;">🎙️ Voice Fill</button>
+            <button class="btn-secondary-desk" onclick="goTo(5)">📋 Manual Review & Edit</button>
+          </div>
+          <div class="fields-panel">
+            <div class="fields-panel-title">Form Info</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.8;">
+              <div>📌 Ministry: <span id="s3-min-label" style="color:rgba(255,255,255,0.7);">—</span></div>
+              <div>🗂️ Form ID: <span id="s3-id-label" style="color:rgba(255,255,255,0.7);font-family:var(--font-mono);">—</span></div>
+              <div>📶 Status: <span style="color:#90EE90;">Offline Ready</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ S4: VOICE FILL ══ -->
+    <div class="screen" id="s4">
+      <div class="screen-header" style="margin-bottom:16px;">
+        <div class="screen-breadcrumb">VoiceForm AI <span>/ Voice Fill</span></div>
+        <h1 id="fill-nav-title">Fill Your <span>Details</span></h1>
+      </div>
+      <div class="progress-panel" style="margin-bottom:20px;">
+        <div class="progress-top">
+          <div class="prog-title" id="voice-field-indicator">Field 1 of 6</div>
+          <div class="prog-pct" id="progress-pct">0%</div>
+        </div>
+        <div class="progress-track-desk"><div class="progress-fill-desk" id="progress-fill"></div></div>
+        <div class="progress-steps" id="progress-steps">
+          <div class="prog-step current" id="ps-1"></div>
+          <div class="prog-step" id="ps-2"></div>
+          <div class="prog-step" id="ps-3"></div>
+          <div class="prog-step" id="ps-4"></div>
+          <div class="prog-step" id="ps-5"></div>
+          <div class="prog-step" id="ps-6"></div>
+        </div>
+      </div>
+      <div class="voice-layout">
+        <div class="voice-main">
+          <!-- Question -->
+          <div class="question-card">
+            <div class="qc-label"><span id="q-label-word">Field</span> <span id="q-num">1</span> / 6</div>
+            <div class="qc-english" id="q-english">What is your full name?</div>
+            <div class="qc-native" id="q-native"></div>
+            <div class="qc-dialect" id="q-dialect"></div>
+          </div>
+          <!-- Mic area -->
+          <div class="mic-area">
+            <div class="mic-outer-desk" id="mic-outer" onclick="toggleMic()">
+              <div class="mic-ripple-desk"></div>
+              <div class="mic-ripple-desk"></div>
+              <div class="mic-ripple-desk"></div>
+              <button class="mic-btn-desk" id="mic-btn">🎙️</button>
+            </div>
+            <div class="mic-info">
+              <div class="mic-status" id="voice-status">Click mic to start speaking</div>
+              <div class="wave-bars-desk" id="wave-bars">
+                <div class="wave-bar-desk"></div><div class="wave-bar-desk"></div>
+                <div class="wave-bar-desk"></div><div class="wave-bar-desk"></div>
+                <div class="wave-bar-desk"></div><div class="wave-bar-desk"></div>
+                <div class="wave-bar-desk"></div><div class="wave-bar-desk"></div>
+                <div class="wave-bar-desk"></div>
+              </div>
+              <div class="mic-realtime-text" id="mic-realtime">—</div>
+            </div>
+            <div style="flex-shrink:0;">
+              <div id="mic-badge" style="padding:6px 12px;border-radius:20px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);font-size:11px;cursor:pointer;border:1px solid var(--border);font-weight:600;" onclick="showMicGuide()">🎙️ Enable Mic</div>
+            </div>
+          </div>
+          <!-- Live transcript -->
+          <div class="live-panel">
+            <div class="live-panel-title"><div class="live-dot" id="live-dot"></div> LIVE TRANSCRIPT</div>
+            <div class="live-transcript" id="live-transcript">Speak into your microphone — transcription appears here in real time…</div>
+          </div>
+          <!-- Answer input -->
+          <div class="answer-area">
+            <div class="answer-label" id="your-answer-label">Your Answer</div>
+            <input type="text" class="answer-input-desk" id="answer-input" autocomplete="off"
+              placeholder="Type here or use voice above…"
+              oninput="onAnswerInput(this.value)"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();confirmAnswer();}">
+            <div class="val-bar-desk" id="val-bar"></div>
+            <div class="val-msg-desk" id="val-msg"></div>
+            <div class="char-counter-desk" id="char-counter"></div>
+            <div class="voice-action-row" style="margin-top:14px;">
+              <button class="vab vab-skip" id="skip-btn" onclick="skipField()">⏭ Skip</button>
+              <button class="vab vab-replay" id="replay-btn" onclick="replayQuestion()">🔊 Replay Question</button>
+              <button class="vab vab-confirm" id="confirm-btn" onclick="confirmAnswer()" disabled>✓ Next →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: field tracker -->
+        <div class="voice-right">
+          <div class="field-tracker">
+            <div class="ft-title">Field Progress</div>
+            <div class="ft-item current" id="ft-1"><div class="ft-num">1</div><div class="ft-label" id="ftl-1">Full Name</div><div class="ft-val" id="ftv-1">—</div></div>
+            <div class="ft-item" id="ft-2"><div class="ft-num">2</div><div class="ft-label" id="ftl-2">Aadhaar Number</div><div class="ft-val" id="ftv-2">—</div></div>
+            <div class="ft-item" id="ft-3"><div class="ft-num">3</div><div class="ft-label" id="ftl-3">Village / City</div><div class="ft-val" id="ftv-3">—</div></div>
+            <div class="ft-item" id="ft-4"><div class="ft-num">4</div><div class="ft-label" id="ftl-4">Date of Birth</div><div class="ft-val" id="ftv-4">—</div></div>
+            <div class="ft-item" id="ft-5"><div class="ft-num">5</div><div class="ft-label" id="ftl-5">Bank Account</div><div class="ft-val" id="ftv-5">—</div></div>
+            <div class="ft-item" id="ft-6"><div class="ft-num">6</div><div class="ft-label" id="ftl-6">Mobile Number</div><div class="ft-val" id="ftv-6">—</div></div>
+          </div>
+          <div class="fields-panel">
+            <div class="fields-panel-title">Voice Tips</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.9;">
+              <div>🎙️ Click mic, speak clearly</div>
+              <div>⌨️ Or type your answer</div>
+              <div>🔊 Replay question anytime</div>
+              <div>⏭ Skip optional fields</div>
+              <div>↵ Press Enter to confirm</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ S5: REVIEW ══ -->
+    <div class="screen" id="s5">
+      <div class="screen-header">
+        <div class="screen-breadcrumb">VoiceForm AI <span>/ Review & Submit</span></div>
+        <h1><span>Review</span> & Edit</h1>
+        <p id="review-sub">Verify all details before submitting. Edit any field directly.</p>
+      </div>
+      <div class="review-layout">
+        <div>
+          <div style="font-family:var(--font-head);font-size:16px;font-weight:800;color:white;margin-bottom:16px;" id="review-form-name">Form</div>
+          <div class="review-field-block"><div class="rfb-label" id="rl-1">Full Name</div><input class="re-input-desk" id="ri-1" type="text" placeholder="—" oninput="syncFromReview(1,this.value)"></div>
+          <div class="review-field-block"><div class="rfb-label" id="rl-2">Aadhaar Number</div><input class="re-input-desk" id="ri-2" type="tel" maxlength="12" placeholder="12 digits" oninput="syncFromReview(2,this.value)"></div>
+          <div class="review-field-block"><div class="rfb-label" id="rl-3">Village / City</div><input class="re-input-desk" id="ri-3" type="text" placeholder="—" oninput="syncFromReview(3,this.value)"></div>
+          <div class="review-field-block"><div class="rfb-label" id="rl-4">Date of Birth</div><input class="re-input-desk" id="ri-4" type="text" placeholder="DD/MM/YYYY" oninput="syncFromReview(4,this.value)"></div>
+          <div class="review-field-block"><div class="rfb-label" id="rl-5">Bank Account</div><input class="re-input-desk" id="ri-5" type="tel" placeholder="9–18 digits" oninput="syncFromReview(5,this.value)"></div>
+          <div class="review-field-block"><div class="rfb-label" id="rl-6">Mobile Number</div><input class="re-input-desk" id="ri-6" type="tel" maxlength="10" placeholder="10 digits" oninput="syncFromReview(6,this.value)"></div>
+          <div id="review-errors"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="sms-panel">
+            <div class="sms-panel-title">📱 SMS Deadline Reminder</div>
+            <div class="sms-panel-desc" id="sms-desc">Get an SMS reminder before form deadlines and status updates.</div>
+            <input type="tel" id="sms-mobile" maxlength="10" class="sms-input" placeholder="Enter 10-digit mobile number" oninput="validateSMSMobile(this.value)">
+            <div id="sms-mobile-msg" style="font-size:11px;color:#FF8080;min-height:14px;margin-bottom:8px;"></div>
+            <div class="sms-btns">
+              <button onclick="setSMSAlert('3days')" id="sms-3d" class="sms-btn">3 days before</button>
+              <button onclick="setSMSAlert('1week')" id="sms-1w" class="sms-btn">1 week before</button>
+              <button onclick="setSMSAlert('1month')" id="sms-1m" class="sms-btn">1 month before</button>
+            </div>
+            <button onclick="registerSMS()" class="sms-register-btn" id="sms-register-btn">📲 Register for SMS Alerts</button>
+            <div id="sms-status" style="font-size:12px;color:#90EE90;text-align:center;margin-top:8px;min-height:16px;"></div>
+          </div>
+          <div class="submit-area">
+            <div class="submit-note-desk"><span>ℹ️</span><span id="submit-note-txt">Verify all details before submitting. This cannot be undone.</span></div>
+            <button class="btn-submit-desk" id="submit-btn" onclick="submitForm()">✅ Submit Form</button>
+            <button class="btn-secondary-desk" id="edit-btn" onclick="goBackToFill()" style="margin-top:10px;width:100%;padding:12px;">🎙️ Re-fill with Voice</button>
+          </div>
+          <div id="sms-confirm-box" style="display:none;background:rgba(19,136,8,0.1);border:1px solid rgba(19,136,8,0.3);border-radius:12px;padding:14px;">
+            <div style="font-size:12px;color:#90EE90;font-weight:700;">📱 SMS Alerts Registered</div>
+            <div id="sms-confirm-text" style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ S6: SUCCESS ══ -->
+    <div class="screen" id="s6">
+      <div class="screen-header">
+        <div class="screen-breadcrumb">VoiceForm AI <span>/ Submission Complete</span></div>
+        <h1>Form <span>Submitted!</span></h1>
+      </div>
+      <div class="success-layout">
+        <div class="success-main">
+          <div class="success-circle-desk" id="success-circle">✓</div>
+          <div class="success-title-desk" id="success-title">Form Submitted!</div>
+          <div class="success-sub-desk" id="success-sub">Your application has been submitted.</div>
+          <div class="ref-box-desk">
+            <div class="rbd-label" id="ref-label">Reference Number</div>
+            <div class="rbd-num" id="ref-num">—</div>
+          </div>
+          <!-- Status tracker -->
+          <div style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:left;margin-bottom:20px;">
+            <div style="font-family:var(--font-head);font-size:12px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">📊 Application Status</div>
+            <div id="status-tracker"></div>
+          </div>
+          <div id="sms-confirm-box2" style="display:none;width:100%;background:rgba(19,136,8,0.1);border:1px solid rgba(19,136,8,0.3);border-radius:12px;padding:12px 16px;margin-bottom:16px;text-align:left;">
+            <div style="font-size:12px;color:#90EE90;font-weight:700;">📱 SMS Alerts Registered</div>
+            <div id="sms-confirm-text2" style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:3px;"></div>
+          </div>
+          <div style="display:flex;gap:12px;width:100%;position:relative;">
+            <button class="btn-primary-desk" id="another-form-btn" style="flex:1;" onclick="resetAll()">📄 Fill Another Form</button>
+            <button class="btn-secondary-desk" id="go-home-btn" style="flex:1;" onclick="goTo(1)">🏠 Go to Home</button>
+          </div>
+        </div>
+        <div class="success-right">
+          <div class="summary-panel">
+            <div class="summary-panel-title">Submitted Details</div>
+            <div id="submitted-summary"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══ WIZARD NAV ═══ -->
+<div class="wizard-nav">
+  <div class="wn-step active" id="wn-1" onclick="goTo(1)"><div class="ws-num">1</div>Home</div>
+  <div class="wn-sep">›</div>
+  <div class="wn-step" id="wn-2" onclick="goTo(2)"><div class="ws-num">2</div>Form Library</div>
+  <div class="wn-sep">›</div>
+  <div class="wn-step" id="wn-3" onclick="goTo(3)"><div class="ws-num">3</div>Preview</div>
+  <div class="wn-sep">›</div>
+  <div class="wn-step" id="wn-4" onclick="startVoiceFill()"><div class="ws-num">4</div>Voice Fill</div>
+  <div class="wn-sep">›</div>
+  <div class="wn-step" id="wn-5" onclick="goTo(5)"><div class="ws-num">5</div>Review</div>
+  <div class="wn-sep">›</div>
+  <div class="wn-step" id="wn-6" onclick="goTo(6)"><div class="ws-num">6</div>Done</div>
+</div>
+
+<!-- ═══ MIC GUIDE MODAL ═══ -->
+<div class="mic-guide-overlay" id="mic-guide">
+  <div class="mic-guide-modal">
+    <div class="mgm-header">
+      <h3 id="mgm-title">🎙️ How to Enable Mic</h3>
+      <button class="mgm-close" onclick="document.getElementById('mic-guide').classList.remove('active')">✕</button>
+    </div>
+    <div id="mic-guide-content"></div>
+    <div class="mgm-btns">
+      <button class="btn-primary-desk" style="flex:1;font-size:14px;" onclick="tryMicNow()">🎙️ Try Mic Now</button>
+      <button class="btn-secondary-desk" style="flex:1;font-size:13px;" onclick="document.getElementById('mic-guide').classList.remove('active')">⌨️ Type Instead</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+var currentScreen = 1;
+var selectedLang = 'Hindi';
+var selectedDialect = '';
+var selectedFormName = '';
+var currentField = 1;
+var TOTAL_FIELDS = 6;
+var filledAnswers = {};
+var recognition = null;
+var micActive = false;
+var micGranted = false;
+var smsAlertPref = '3days';
+var fontMode = 'normal';
+var highContrast = false;
+
+/* ═══════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════ */
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('s' + n).classList.add('active');
+  currentScreen = n;
+  // Sidebar
+  document.querySelectorAll('[id^="snav-"]').forEach(function(el) { el.classList.remove('active'); });
+  var sn = document.getElementById('snav-' + n);
+  if (sn) sn.classList.add('active');
+  // Wizard nav
+  document.querySelectorAll('[id^="wn-"]').forEach(function(el) { el.classList.remove('active'); });
+  var wn = document.getElementById('wn-' + n);
+  if (wn) wn.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ═══════════════════════════════════════════════════
+   LANGUAGE
+═══════════════════════════════════════════════════ */
+var DIALECTS = {
+  Hindi: [{label:'Khari Boli',desc:'Standard Hindi — used across North India'},{label:'Awadhi',desc:'Uttar Pradesh region'},{label:'Bhojpuri',desc:'Eastern UP & Bihar'},{label:'Rajasthani',desc:'Rajasthan variant'},{label:'Haryanvi',desc:'Haryana region'}],
+  Tamil: [{label:'Chennai Tamil',desc:'Urban standard Tamil'},{label:'Madurai Tamil',desc:'South Tamil Nadu'},{label:'Coimbatore',desc:'Western Tamil Nadu'},{label:'Tirunelveli',desc:'Southern dialect'}],
+  Bengali: [{label:'Rarhi',desc:'West Bengal standard'},{label:'Vanga',desc:'Bangladesh variant'},{label:'Sylheti',desc:'Sylhet region'}],
+  Telugu: [{label:'Coastal',desc:'Andhra coast region'},{label:'Rayalaseema',desc:'Southern Andhra'},{label:'Telangana',desc:'Telangana variant'}],
+  Marathi: [{label:'Varhadi',desc:'Vidarbha region'},{label:'Ahirani',desc:'Khandesh region'},{label:'Konkani',desc:'Coastal Marathi'}],
+  Kannada: [{label:'Mysore',desc:'Standard Kannada'},{label:'Dharwad',desc:'North Karnataka'},{label:'Kodagu',desc:'Coorg variant'}]
+};
+var MIC_CODES = {Hindi:'hi-IN',Tamil:'ta-IN',Bengali:'bn-IN',Telugu:'te-IN',Marathi:'mr-IN',Kannada:'kn-IN'};
+
+function buildDialectRow(lang) {
+  var dialects = DIALECTS[lang] || [];
+  var html = '';
+  dialects.forEach(function(d, i) {
+    html += '<button class="dialect-btn' + (i===0?' active':'') + '" onclick="selectDialect(this,\'' + d.label + '\',\'' + d.desc.replace(/'/g,"\\'") + '\')">' + d.label + '</button>';
+  });
+  document.getElementById('dialect-options').innerHTML = html;
+  if (dialects.length) {
+    selectedDialect = dialects[0].label;
+    document.getElementById('dialect-desc').textContent = dialects[0].desc;
+  }
+}
+
+function selectDialect(el, label, desc) {
+  document.querySelectorAll('.dialect-btn').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+  selectedDialect = label;
+  document.getElementById('dialect-desc').textContent = desc;
+  if (recognition) { try { recognition.abort(); } catch(e){} recognition = null; }
+}
+
+function selectLang(el, lang) {
+  // from topnav
+  document.querySelectorAll('.nav-lang-btn').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  applyLang(lang);
+  buildDialectRow(lang);
+  // sync sidebar
+  document.querySelectorAll('.lang-card-s').forEach(function(c){c.classList.remove('selected');});
+  var cards = document.querySelectorAll('.lang-card-s');
+  var LANGS = ['Hindi','Tamil','Bengali','Telugu','Marathi','Kannada'];
+  var idx = LANGS.indexOf(lang);
+  if (cards[idx]) cards[idx].classList.add('selected');
+}
+
+function selectLang2(el, lang) {
+  // from sidebar
+  document.querySelectorAll('.lang-card-s').forEach(function(c){c.classList.remove('selected');});
+  el.classList.add('selected');
+  applyLang(lang);
+  buildDialectRow(lang);
+  // sync topnav
+  document.querySelectorAll('.nav-lang-btn').forEach(function(b){b.classList.remove('active');});
+  var LANGS = ['Hindi','Tamil','Bengali','Telugu','Marathi','Kannada'];
+  var idx = LANGS.indexOf(lang);
+  var navBtns = document.querySelectorAll('.nav-lang-btn');
+  if (navBtns[idx]) navBtns[idx].classList.add('active');
+}
+
+function applyLang(lang) {
+  selectedLang = lang;
+  var L = LANG[lang];
+  if (!L) return;
+  var el = function(id) { return document.getElementById(id); };
+  if (el('s1-tagline')) el('s1-tagline').textContent = L.tagline;
+  if (el('s1-main-btn')) el('s1-main-btn').textContent = L.mainBtn;
+  if (el('s1-camera-btn')) el('s1-camera-btn').textContent = L.cameraBtn;
+  if (el('upload-title')) el('upload-title').textContent = L.uploadTitle;
+  if (el('upload-sub')) el('upload-sub').textContent = L.uploadSub;
+  if (el('start-voice-btn')) el('start-voice-btn').textContent = L.startBtn;
+  if (el('fields-title')) {}
+  if (el('ocr-success-text')) el('ocr-success-text').textContent = L.ocrOk;
+  if (el('ocr-sub-text')) el('ocr-sub-text').textContent = L.ocrSub;
+  if (el('review-title')) {}
+  if (el('review-sub')) el('review-sub').textContent = L.reviewSub;
+  if (el('sms-desc')) el('sms-desc').textContent = L.smsDesc;
+  if (el('submit-note-txt')) el('submit-note-txt').textContent = L.submitNote;
+  if (el('fill-nav-title')) el('fill-nav-title').innerHTML = L.fillNavTitle + ' <span>Details</span>';
+  if (el('your-answer-label')) el('your-answer-label').textContent = L.yourAnswer;
+  // Update field labels in fields list, review, tracker
+  for (var i = 1; i <= TOTAL_FIELDS; i++) {
+    if (el('flabel-'+i)) el('flabel-'+i).textContent = L.fLabels[i-1];
+    if (el('rl-'+i)) el('rl-'+i).textContent = L.fLabels[i-1];
+    if (el('ftl-'+i)) el('ftl-'+i).textContent = L.fLabels[i-1];
+    if (!filledAnswers[i]) {
+      if (el('fv-'+i)) { el('fv-'+i).textContent = L.notFilled; el('fv-'+i).className = 'fid-value empty'; }
+    }
+  }
+  if (el('skip-btn')) el('skip-btn').textContent = L.skipBtn;
+  if (el('replay-btn')) el('replay-btn').textContent = L.replayBtn;
+  if (el('confirm-btn')) el('confirm-btn').textContent = L.confirmBtn;
+  if (el('submit-btn')) el('submit-btn').textContent = L.submitBtn;
+  if (el('edit-btn')) el('edit-btn').textContent = L.editBtn;
+  if (el('another-form-btn')) el('another-form-btn').textContent = L.anotherForm;
+  if (el('go-home-btn')) el('go-home-btn').textContent = L.goHome;
+  if (el('voice-status') && !micActive) el('voice-status').textContent = L.tapMsg;
+  updateMicBadge();
+  if (currentField) loadField(currentField);
+}
+
+/* ═══════════════════════════════════════════════════
+   ACCESSIBILITY
+═══════════════════════════════════════════════════ */
+function setFontSize(mode) {
+  fontMode = mode;
+  document.body.classList.remove('font-large','font-xl');
+  if (mode === 'large') document.body.classList.add('font-large');
+  if (mode === 'xl') document.body.classList.add('font-xl');
+  ['fs-normal','fs-large','fs-xl','fsa-normal','fsa-large','fsa-xl'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  var map = {normal:['fs-normal','fsa-normal'],large:['fs-large','fsa-large'],xl:['fs-xl','fsa-xl']};
+  (map[mode]||[]).forEach(function(id) { var el=document.getElementById(id); if(el) el.classList.add('active'); });
+}
+function toggleContrast() {
+  highContrast = !highContrast;
+  document.body.classList.toggle('high-contrast', highContrast);
+  ['contrast-btn','contrast-btn2'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.toggle('active',highContrast);});
+}
+
+/* ═══════════════════════════════════════════════════
+   FILE UPLOAD
+═══════════════════════════════════════════════════ */
+function handleFileUpload(e) {
+  var f = e.target.files[0];
+  if (!f) return;
+  document.getElementById('upload-filename').textContent = f.name;
+  document.getElementById('upload-preview').style.display = 'block';
+  setTimeout(function() { selectForm('income-cert'); }, 600);
+}
+
+/* ═══════════════════════════════════════════════════
+   FORM LIBRARY
+═══════════════════════════════════════════════════ */
+var ALL_FORMS = [
+  {key:'pm-kisan',icon:'🌾',name:'PM-KISAN Registration',dept:'Ministry of Agriculture',cat:'welfare',offline:true,deadline:'Mar 31',note:'Direct farmer income support',ministry:'MINISTRY OF AGRICULTURE',formId:'PM-KISAN-2024',deadlineDate:'2026-03-31'},
+  {key:'aadhaar-correction',icon:'🪪',name:'Aadhaar Correction Form',dept:'UIDAI',cat:'identity',offline:true,deadline:'Anytime',note:'Name/DOB/Address update',ministry:'UIDAI',formId:'AADHAAR-CORR-2024',deadlineDate:null},
+  {key:'income-cert',icon:'📄',name:'Income Certificate Application',dept:'Revenue Dept.',cat:'welfare',offline:true,deadline:'Anytime',note:'State govt. income proof',ministry:'STATE REVENUE DEPARTMENT',formId:'INC-CERT-2024',deadlineDate:null},
+  {key:'ayushman',icon:'🏥',name:'Ayushman Bharat Enrollment',dept:'Ministry of Health',cat:'health',offline:true,deadline:'Anytime',note:'₹5L health insurance',ministry:'MINISTRY OF HEALTH',formId:'PMJAY-2024',deadlineDate:null},
+  {key:'pan-apply',icon:'💳',name:'PAN Card Application',dept:'Income Tax Dept.',cat:'identity',offline:true,deadline:'Anytime',note:'New PAN or correction',ministry:'INCOME TAX DEPARTMENT',formId:'NSDL-PAN-49A',deadlineDate:null},
+  {key:'ration-card',icon:'🍚',name:'Ration Card Application',dept:'Food & Civil Supplies',cat:'welfare',offline:true,deadline:'Anytime',note:'New or duplicate card',ministry:'STATE FOOD DEPT.',formId:'RC-2024',deadlineDate:null},
+  {key:'land-record',icon:'🏠',name:'Land Record Mutation',dept:'Revenue Department',cat:'land',offline:true,deadline:'Anytime',note:'Property transfer record',ministry:'STATE REVENUE DEPT.',formId:'LR-MUT-2024',deadlineDate:null},
+  {key:'scholarship',icon:'🎓',name:'National Scholarship (NSP)',dept:'Ministry of Education',cat:'welfare',offline:true,deadline:'Oct 31',note:'Central govt. scholarships',ministry:'MINISTRY OF EDUCATION',formId:'NSP-2024',deadlineDate:'2026-10-31'},
+  {key:'voter-id',icon:'🗳️',name:'Voter ID Registration',dept:'Election Commission',cat:'identity',offline:true,deadline:'Anytime',note:'Form 6 — new voter',ministry:'ELECTION COMMISSION OF INDIA',formId:'FORM-6-ECI',deadlineDate:null},
+  {key:'pm-awas',icon:'🏡',name:'PM Awas Yojana (Rural)',dept:'Ministry of Rural Dev.',cat:'land',offline:true,deadline:'Anytime',note:'Rural housing scheme',ministry:'MINISTRY OF RURAL DEVELOPMENT',formId:'PMAY-R-2024',deadlineDate:null},
+  {key:'kcc',icon:'🌱',name:'Kisan Credit Card (KCC)',dept:'Ministry of Agriculture',cat:'finance',offline:true,deadline:'Anytime',note:'Farmer credit facility',ministry:'MINISTRY OF AGRICULTURE',formId:'KCC-2024',deadlineDate:null},
+  {key:'mudra',icon:'💰',name:'PM Mudra Loan (Shishu)',dept:'Ministry of Finance',cat:'finance',offline:true,deadline:'Anytime',note:'Up to ₹50K business loan',ministry:'MINISTRY OF FINANCE',formId:'MUDRA-SH-2024',deadlineDate:null},
+  {key:'birth-cert',icon:'👶',name:'Birth Certificate Application',dept:'Civil Registration',cat:'identity',offline:true,deadline:'Anytime',note:'Hospital / CSC form',ministry:'CIVIL REGISTRATION SYSTEM',formId:'CRS-BIRTH-2024',deadlineDate:null},
+  {key:'old-age',icon:'👴',name:'Old Age Pension (IGNOAPS)',dept:'Ministry of Social Justice',cat:'welfare',offline:true,deadline:'Anytime',note:'₹300–500/month pension',ministry:'MINISTRY OF SOCIAL JUSTICE',formId:'IGNOAPS-2024',deadlineDate:null},
+  {key:'widow-pension',icon:'👩',name:'Widow Pension (IGNWPS)',dept:'Ministry of Social Justice',cat:'welfare',offline:true,deadline:'Anytime',note:'₹300+/month support',ministry:'MINISTRY OF SOCIAL JUSTICE',formId:'IGNWPS-2024',deadlineDate:null},
+  {key:'jal-jeevan',icon:'💧',name:'Jal Jeevan Mission Connection',dept:'Ministry of Jal Shakti',cat:'welfare',offline:true,deadline:'Anytime',note:'Tap water at home',ministry:'MINISTRY OF JAL SHAKTI',formId:'JJM-2024',deadlineDate:null},
+  {key:'uday',icon:'⚡',name:'UDAY Power Connection',dept:'Ministry of Power',cat:'welfare',offline:true,deadline:'Anytime',note:'Rural electricity connection',ministry:'MINISTRY OF POWER',formId:'UDAY-CONN-2024',deadlineDate:null},
+  {key:'pm-ujjwala',icon:'🔥',name:'PM Ujjwala Yojana (LPG)',dept:'Ministry of Petroleum',cat:'welfare',offline:true,deadline:'Anytime',note:'Free LPG connection BPL',ministry:'MINISTRY OF PETROLEUM',formId:'PMUY-2024',deadlineDate:null},
+  {key:'soil-health',icon:'🌱',name:'Soil Health Card Registration',dept:'Ministry of Agriculture',cat:'land',offline:true,deadline:'Anytime',note:'Free soil testing',ministry:'MINISTRY OF AGRICULTURE',formId:'SHC-2024',deadlineDate:null},
+  {key:'disability-cert',icon:'♿',name:'Disability Certificate (UDID)',dept:'Ministry of Social Justice',cat:'identity',offline:true,deadline:'Anytime',note:'Unique Disability ID',ministry:'MINISTRY OF SOCIAL JUSTICE',formId:'UDID-2024',deadlineDate:null}
+];
+var currentCat = 'all';
+
+function renderForms(list) {
+  var html = '';
+  list.forEach(function(f) {
+    var hasDL = f.deadlineDate, daysLeft = null;
+    if (hasDL) { var dl=new Date(hasDL),now=new Date(); daysLeft=Math.round((dl-now)/(1000*60*60*24)); }
+    var dlBadge = daysLeft!==null ? (daysLeft<0?'<span class="deadline-badge">⏰ Deadline passed</span>':daysLeft<30?'<span class="deadline-badge">⚠️ '+daysLeft+'d left</span>':'') : '';
+    html += '<div class="form-card-desk" onclick="selectForm(\''+f.key+'\')">'
+      + '<div class="fcd-icon">'+f.icon+'</div>'
+      + '<div class="fcd-info" style="flex:1;">'
+        + '<div class="fcd-name">'+f.name+'</div>'
+        + '<div class="fcd-dept">'+f.dept+' • '+f.note+'</div>'
+        + '<div class="fcd-badges"><span class="offline-badge">✅ Offline ready</span>'+dlBadge+'</div>'
+      + '</div>'
+      + '<div class="fcd-arrow">›</div></div>';
+  });
+  document.getElementById('forms-list').innerHTML = html || '<div style="text-align:center;color:rgba(255,255,255,0.3);padding:40px;font-size:14px;">No forms found.</div>';
+}
+
+function filterCat(cat) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(function(b){b.classList.remove('active-cat');});
+  document.getElementById('cat-'+cat).classList.add('active-cat');
+  var list = cat==='all' ? ALL_FORMS : ALL_FORMS.filter(function(f){return f.cat===cat;});
+  renderForms(list);
+}
+
+function filterForms(q) {
+  var list = ALL_FORMS.filter(function(f) {
+    var m = currentCat==='all' || f.cat===currentCat;
+    return m && (f.name.toLowerCase().includes(q.toLowerCase()) || f.dept.toLowerCase().includes(q.toLowerCase()));
+  });
+  renderForms(list);
+}
+
+function selectForm(key) {
+  var f = ALL_FORMS.find(function(x){return x.key===key;});
+  if (!f) return;
+  selectedFormName = f.name;
+  var L = LANG[selectedLang];
+  document.getElementById('s3-form-title').innerHTML = f.name.substring(0,20) + ' <span>Preview</span>';
+  document.getElementById('s3-ministry').textContent = f.ministry;
+  document.getElementById('s3-form-full').textContent = f.name;
+  document.getElementById('s3-form-id').textContent = 'Form ID: ' + f.formId;
+  document.getElementById('s3-min-label').textContent = f.ministry;
+  document.getElementById('s3-id-label').textContent = f.formId;
+  document.getElementById('review-form-name').textContent = f.name;
+  // Deadline
+  if (f.deadlineDate) {
+    var dl=new Date(f.deadlineDate), now=new Date();
+    var days=Math.round((dl-now)/(1000*60*60*24));
+    document.getElementById('deadline-banner').style.display = 'block';
+    document.getElementById('deadline-text').textContent = 'Deadline: ' + dl.toDateString();
+    document.getElementById('deadline-days').textContent = days>0?days+' days remaining':'Deadline has passed!';
+  } else {
+    document.getElementById('deadline-banner').style.display = 'none';
+  }
+  // OCR text
+  document.getElementById('ocr-success-text').textContent = L.ocrOk;
+  document.getElementById('ocr-sub-text').textContent = TOTAL_FIELDS + ' fields detected';
+  goTo(3);
+}
+
+/* ═══════════════════════════════════════════════════
+   FIELDS
+═══════════════════════════════════════════════════ */
+var FIELDS = [
+  {key:'name',inputType:'text',counter:null,engQ:'What is your full name?',engLabel:'Full Name',
+   placeholder:{Hindi:'जैसे: राजेश कुमार',Tamil:'எ.கா: ராஜேஷ்',Bengali:'যেমন: রাজেশ',Telugu:'ఉదా: రాజేష్',Marathi:'उदा: राजेश',Kannada:'ಉದಾ: ರಾಜೇಶ್'},
+   validate:function(v,E){if(!v)return{ok:false,msg:E.nameEmpty};if(v.trim().length<2)return{ok:false,msg:E.nameTooShort};if(/\d/.test(v))return{ok:false,msg:E.nameHasDigits};if(v.trim().split(/\s+/).length<2)return{ok:true,msg:'',hint:E.nameHint};return{ok:true,msg:'✓',hint:''}}},
+  {key:'aadhaar',inputType:'tel',counter:12,engQ:'What is your 12-digit Aadhaar number?',engLabel:'Aadhaar Number',
+   placeholder:{Hindi:'12 अंकों का आधार',Tamil:'12 ஆதார் இலக்கங்கள்',Bengali:'১২ সংখ্যার আধার',Telugu:'12 ఆధార్ అంకెలు',Marathi:'12 अंकी आधार',Kannada:'12 ಆಧಾರ್ ಅಂಕಿಗಳು'},
+   validate:function(v,E){var d=v.replace(/\s/g,'');if(!d)return{ok:false,msg:E.aadhaarEmpty};if(/[a-zA-Z]/.test(d))return{ok:false,msg:E.aadhaarLetters};if(!/^\d+$/.test(d))return{ok:false,msg:E.aadhaarLetters};if(d.length<12)return{ok:false,msg:E.aadhaarShort.replace('{n}',d.length).replace('{r}',12-d.length)};if(d.length>12)return{ok:false,msg:E.aadhaarLong.replace('{n}',d.length).replace('{r}',d.length-12)};if(/^(\d)\1{11}$/.test(d))return{ok:false,msg:E.aadhaarRepeat};return{ok:true,msg:E.aadhaarOk}}},
+  {key:'village',inputType:'text',counter:null,engQ:'What is your village or city name?',engLabel:'Village / City',
+   placeholder:{Hindi:'गाँव या शहर',Tamil:'கிராமம் அல்லது நகரம்',Bengali:'গ্রাম বা শহর',Telugu:'గ్రామం లేదా నగరం',Marathi:'गाव किंवा शहर',Kannada:'ಗ್ರಾಮ ಅಥವಾ ನಗರ'},
+   validate:function(v,E){if(!v)return{ok:false,msg:E.villageEmpty};if(v.trim().length<2)return{ok:false,msg:E.villageTooShort};if(/^\d+$/.test(v.trim()))return{ok:false,msg:E.villageNumbers};return{ok:true,msg:'✓',hint:''}}},
+  {key:'dob',inputType:'text',counter:null,engQ:'What is your date of birth? (DD/MM/YYYY)',engLabel:'Date of Birth',
+   placeholder:{Hindi:'DD/MM/YYYY जैसे 15/08/1990',Tamil:'DD/MM/YYYY',Bengali:'DD/MM/YYYY',Telugu:'DD/MM/YYYY',Marathi:'DD/MM/YYYY',Kannada:'DD/MM/YYYY'},
+   validate:function(v,E){if(!v)return{ok:false,msg:E.dobEmpty};var c=v.replace(/[-\.]/g,'/'),m=c.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(!m)return{ok:false,msg:E.dobFormat};var d=parseInt(m[1]),mo=parseInt(m[2]),y=parseInt(m[3]);if(mo<1||mo>12)return{ok:false,msg:E.dobMonth};if(d<1||d>31)return{ok:false,msg:E.dobDay};if(y<1900||y>new Date().getFullYear())return{ok:false,msg:E.dobYear};return{ok:true,msg:E.dobOk.replace('{age}',new Date().getFullYear()-y)}}},
+  {key:'bank',inputType:'tel',counter:null,engQ:'What is your bank account number? (9–18 digits)',engLabel:'Bank Account Number',
+   placeholder:{Hindi:'9 से 18 अंकों का खाता',Tamil:'9-18 இலக்க கணக்கு',Bengali:'৯-১৮ সংখ্যার অ্যাকাউন্ট',Telugu:'9-18 అంకెల అకౌంట్',Marathi:'9 ते 18 अंकी खाते',Kannada:'9-18 ಅಂಕಿ ಖಾತೆ'},
+   validate:function(v,E){var d=v.replace(/\s/g,'');if(!d)return{ok:false,msg:E.bankEmpty};if(/[a-zA-Z]/.test(d))return{ok:false,msg:E.bankLetters};if(!/^\d+$/.test(d))return{ok:false,msg:E.bankLetters};if(d.length<9)return{ok:false,msg:E.bankShort.replace('{n}',d.length)};if(d.length>18)return{ok:false,msg:E.bankLong.replace('{n}',d.length)};return{ok:true,msg:E.bankOk}}},
+  {key:'mobile',inputType:'tel',counter:10,engQ:'What is your 10-digit mobile number?',engLabel:'Mobile Number',
+   placeholder:{Hindi:'10 अंकों का मोबाइल',Tamil:'10 இலக்க மொபைல்',Bengali:'১০ সংখ্যার মোবাইল',Telugu:'10 అంకెల మొబైల్',Marathi:'10 अंकी मोबाईल',Kannada:'10 ಅಂಕಿ ಮೊಬೈಲ್'},
+   validate:function(v,E){var d=v.replace(/[\s\-\+]/g,'');if(!d)return{ok:false,msg:E.mobileEmpty};if(/[a-zA-Z]/.test(d))return{ok:false,msg:E.mobileLetters};if(!/^\d+$/.test(d))return{ok:false,msg:E.mobileLetters};if(d.length!==10)return{ok:false,msg:E.mobileLen.replace('{n}',d.length)};if(/^[01234]/.test(d))return{ok:false,msg:E.mobileStart};return{ok:true,msg:E.mobileOk}}}
+];
+
+/* ═══════════════════════════════════════════════════
+   LANGUAGE DATA
+═══════════════════════════════════════════════════ */
+var LANG = {
+  Hindi:{tagline:'सरकारी फॉर्म अब आपकी भाषा में। बोलिए या टाइप करें — रीयल टाइम जाँच।',mainBtn:'📄 फॉर्म चुनें या अपलोड करें →',cameraBtn:'📷 कैमरे से स्कैन',uploadTitle:'PDF / फोटो अपलोड करें',uploadSub:'फ़ाइल चुनें',ocrOk:'फॉर्म तैयार (Offline Cache)',ocrSub:' 6 फ़ील्ड',startBtn:'🎙️ फॉर्म भरना शुरू करें →',fLabels:['पूरा नाम','आधार नंबर','गाँव / शहर','जन्म तिथि','बैंक खाता','मोबाइल नंबर'],questions:['आपका पूरा नाम क्या है?','आपका 12 अंकों का आधार नंबर?','गाँव या शहर का नाम?','जन्म तिथि? (DD/MM/YYYY)','बैंक खाता नंबर?','10 अंकों का मोबाइल नंबर?'],tapMsg:'🎙️ माइक दबाएं या टाइप करें',listenMsg:'🔴 सुन रहा है…',capturedMsg:'✅ जवाब मिला!',yourAnswer:'आपका जवाब',qWord:'फ़ील्ड',progress:'प्रगति',fillNavTitle:'जानकारी भरें',skipBtn:'⏭ छोड़ें',replayBtn:'🔊 दोबारा',confirmBtn:'✓ अगला →',submitBtn:'✅ फॉर्म जमा करें',editBtn:'🎙️ दोबारा भरें',successTitle:'फॉर्म जमा हुआ!',successSub:'आवेदन सफलतापूर्वक जमा।',refLabel:'संदर्भ संख्या',anotherForm:'📄 दूसरा फॉर्म',goHome:'🏠 होम',notFilled:'नहीं भरा',micBadgeOff:'🎙️ माइक चालू करें',micBadgeOn:'✅ माइक चालू',micBadgeActive:'⏹ माइक बंद करें',micDenied:'❌ माइक की अनुमति नहीं',micNoSupport:'⌨️ Chrome में खोलें',micGuideTitle:'🎙️ माइक कैसे चालू करें',micGuideSteps:[{title:'Chrome या Edge खोलें',text:'Google Chrome या Edge में खोलें।'},{title:'🔒 आइकन पर क्लिक करें',text:'Microphone → Allow।'},{title:'पेज रीफ्रेश करें',text:'Ctrl+R।'},{title:'माइक बटन दबाएं',text:'🎙️ → Allow।'}],reviewTitle:'जाँचें और बदलें',reviewSub:'जमा करने से पहले बदलें',submitNote:'सभी जानकारी जाँच लें।',smsDesc:'SMS से डेडलाइन अपडेट पाएं।',
+   errors:{nameEmpty:'नाम खाली नहीं रह सकता।',nameTooShort:'नाम बहुत छोटा है।',nameHasDigits:'नाम में संख्याएं नहीं।',nameHint:'सुझाव: पूरा नाम डालें।',aadhaarEmpty:'आधार नंबर ज़रूरी है।',aadhaarLetters:'केवल अंक होने चाहिए।',aadhaarShort:'आधार {n} अंक। 12 चाहिए। {r} और डालें।',aadhaarLong:'आधार {n} अंक। {r} हटाएं।',aadhaarRepeat:'अमान्य आधार।',aadhaarOk:'✓ सही 12 अंकों का आधार।',villageEmpty:'गाँव/शहर ज़रूरी है।',villageTooShort:'नाम बहुत छोटा।',villageNumbers:'केवल संख्याओं से नहीं।',dobEmpty:'जन्म तिथि ज़रूरी है।',dobFormat:'फॉर्मेट: DD/MM/YYYY।',dobMonth:'महीना 1-12।',dobDay:'दिन 1-31।',dobYear:'सही साल।',dobOk:'✓ सही। उम्र ~{age} साल।',bankEmpty:'बैंक खाता ज़रूरी है।',bankLetters:'केवल अंक।',bankShort:'खाता {n} अंक। 9-18 चाहिए।',bankLong:'खाता {n} अंक।',bankOk:'✓ सही बैंक खाता।',mobileEmpty:'मोबाइल ज़रूरी है।',mobileLetters:'केवल अंक।',mobileLen:'मोबाइल {n} अंक। 10 चाहिए।',mobileStart:'6,7,8,9 से शुरू हो।',mobileOk:'✓ सही मोबाइल।',fixErrors:'⚠️ ये गलतियाँ ठीक करें:'}},
+  Tamil:{tagline:'அரசு படிவங்கள் உங்கள் மொழியில்.',mainBtn:'📄 படிவம் தேர்ந்தெடு →',cameraBtn:'📷 கேமராவில் ஸ்கேன்',uploadTitle:'PDF / படம் பதிவேற்று',uploadSub:'சாதனத்திலிருந்து தேர்ந்தெடு',ocrOk:'படிவம் தயார் (Offline)',ocrSub:' 6 புலங்கள்',startBtn:'🎙️ படிவம் நிரப்பவும் →',fLabels:['முழு பெயர்','ஆதார் எண்','கிராமம்/நகரம்','பிறந்த தேதி','வங்கி கணக்கு','மொபைல் எண்'],questions:['உங்கள் முழு பெயர்?','12 இலக்க ஆதார் எண்?','கிராமம் அல்லது நகரம்?','பிறந்த தேதி (DD/MM/YYYY)?','வங்கி கணக்கு எண்?','10 இலக்க மொபைல் எண்?'],tapMsg:'🎙️ மைக் அழுத்தவும்',listenMsg:'🔴 கேட்கிறது…',capturedMsg:'✅ பதில் கிடைத்தது!',yourAnswer:'உங்கள் பதில்',qWord:'புலம்',progress:'முன்னேற்றம்',fillNavTitle:'உங்கள் விவரங்கள்',skipBtn:'⏭ தவிர்',replayBtn:'🔊 மீண்டும்',confirmBtn:'✓ அடுத்தது →',submitBtn:'✅ சமர்ப்பி',editBtn:'🎙️ மீண்டும் நிரப்பு',successTitle:'சமர்ப்பிக்கப்பட்டது!',successSub:'விண்ணப்பம் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது.',refLabel:'குறிப்பு எண்',anotherForm:'📄 மற்றொரு படிவம்',goHome:'🏠 முகப்பு',notFilled:'நிரப்பவில்லை',micBadgeOff:'🎙️ மைக் இயக்கு',micBadgeOn:'✅ மைக்',micBadgeActive:'⏹ நிறுத்து',micDenied:'❌ மைக் இல்லை',micNoSupport:'⌨️ Chrome திற',micGuideTitle:'🎙️ மைக்ரோஃபோன் இயக்கு',micGuideSteps:[{title:'Chrome திற',text:'Google Chrome திறக்கவும்.'},{title:'🔒 கிளிக்',text:'Microphone → Allow.'},{title:'புதுப்பி',text:'Ctrl+R.'},{title:'மைக் அழுத்து',text:'🎙️ → Allow.'}],reviewTitle:'மதிப்பாய்வு',reviewSub:'சமர்ப்பிக்கும் முன் திருத்தவும்',submitNote:'அனைத்தையும் சரிபார்க்கவும்.',smsDesc:'SMS மூலம் அறிவிப்புகள் பெறுங்கள்.',
+   errors:{nameEmpty:'பெயர் காலியாக இருக்க முடியாது.',nameTooShort:'பெயர் மிகவும் குறுகியது.',nameHasDigits:'பெயரில் எண்கள் வேண்டாம்.',nameHint:'குறிப்பு: முழு பெயர் உள்ளிடவும்.',aadhaarEmpty:'ஆதார் தேவை.',aadhaarLetters:'எண்கள் மட்டும்.',aadhaarShort:'ஆதார் {n} இலக்கம். {r} சேர்க்கவும்.',aadhaarLong:'{r} நீக்கவும்.',aadhaarRepeat:'தவறான ஆதார்.',aadhaarOk:'✓ சரியான ஆதார்.',villageEmpty:'கிராமம் தேவை.',villageTooShort:'பெயர் குறுகியது.',villageNumbers:'எண்களாக மட்டும் வேண்டாம்.',dobEmpty:'தேதி தேவை.',dobFormat:'DD/MM/YYYY.',dobMonth:'மாதம் 1-12.',dobDay:'நாள் 1-31.',dobYear:'சரியான வருடம்.',dobOk:'✓ வயது ~{age}.',bankEmpty:'வங்கி கணக்கு தேவை.',bankLetters:'எண்கள் மட்டும்.',bankShort:'{n} இலக்கம். 9-18 வேண்டும்.',bankLong:'{n} இலக்கம்.',bankOk:'✓ சரியான கணக்கு.',mobileEmpty:'மொபைல் தேவை.',mobileLetters:'எண்கள் மட்டும்.',mobileLen:'{n} இலக்கம். 10 வேண்டும்.',mobileStart:'6-9 தொடங்கவும்.',mobileOk:'✓ சரியான மொபைல்.',fixErrors:'⚠️ சரிசெய்யவும்:'}},
+  Bengali:{tagline:'সরকারি ফর্ম আপনার ভাষায়।',mainBtn:'📄 ফর্ম বেছে নিন →',cameraBtn:'📷 স্ক্যান',uploadTitle:'PDF / ছবি আপলোড',uploadSub:'ফাইল বেছে নিন',ocrOk:'ফর্ম তৈরি (Offline)',ocrSub:' ৬টি ক্ষেত্র',startBtn:'🎙️ ফর্ম পূরণ শুরু →',fLabels:['পুরো নাম','আধার নম্বর','গ্রাম/শহর','জন্ম তারিখ','ব্যাংক অ্যাকাউন্ট','মোবাইল নম্বর'],questions:['আপনার পুরো নাম?','১২ সংখ্যার আধার?','গ্রাম বা শহর?','জন্ম তারিখ (DD/MM/YYYY)?','ব্যাংক অ্যাকাউন্ট?','১০ সংখ্যার মোবাইল?'],tapMsg:'🎙️ মাইক চাপুন',listenMsg:'🔴 শুনছি…',capturedMsg:'✅ উত্তর পাওয়া গেছে!',yourAnswer:'আপনার উত্তর',qWord:'ক্ষেত্র',progress:'অগ্রগতি',fillNavTitle:'তথ্য দিন',skipBtn:'⏭ এড়িয়ে',replayBtn:'🔊 আবার',confirmBtn:'✓ পরবর্তী →',submitBtn:'✅ জমা দিন',editBtn:'🎙️ আবার পূরণ',successTitle:'জমা হয়েছে!',successSub:'আবেদন সফলভাবে জমা।',refLabel:'রেফারেন্স',anotherForm:'📄 আরেকটি ফর্ম',goHome:'🏠 হোম',notFilled:'পূরণ হয়নি',micBadgeOff:'🎙️ মাইক চালু',micBadgeOn:'✅ মাইক',micBadgeActive:'⏹ বন্ধ',micDenied:'❌ মাইক নেই',micNoSupport:'⌨️ Chrome খুলুন',micGuideTitle:'🎙️ মাইক চালু করুন',micGuideSteps:[{title:'Chrome খুলুন',text:'Google Chrome.'},{title:'🔒 ক্লিক',text:'Microphone → Allow.'},{title:'রিফ্রেশ',text:'Ctrl+R.'},{title:'মাইক চাপুন',text:'🎙️ → Allow.'}],reviewTitle:'পর্যালোচনা',reviewSub:'জমা দেওয়ার আগে পরিবর্তন করুন',submitNote:'সব যাচাই করুন।',smsDesc:'SMS মাধ্যমে আপডেট পান।',
+   errors:{nameEmpty:'নাম খালি রাখা যাবে না।',nameTooShort:'নাম খুব ছোট।',nameHasDigits:'নামে সংখ্যা নয়।',nameHint:'পুরো নাম লিখুন।',aadhaarEmpty:'আধার প্রয়োজন।',aadhaarLetters:'শুধু সংখ্যা।',aadhaarShort:'আধার {n} সংখ্যা। {r}টি দিন।',aadhaarLong:'{r}টি মুছুন।',aadhaarRepeat:'অবৈধ আধার।',aadhaarOk:'✓ সঠিক আধার।',villageEmpty:'গ্রাম/শহর প্রয়োজন।',villageTooShort:'নাম ছোট।',villageNumbers:'শুধু সংখ্যা নয়।',dobEmpty:'জন্ম তারিখ প্রয়োজন।',dobFormat:'DD/MM/YYYY.',dobMonth:'মাস ১-১২।',dobDay:'দিন ১-৩১।',dobYear:'সঠিক বছর।',dobOk:'✓ বয়স ~{age}।',bankEmpty:'অ্যাকাউন্ট প্রয়োজন।',bankLetters:'শুধু সংখ্যা।',bankShort:'{n} সংখ্যা। ৯-১৮ দরকার।',bankLong:'সংখ্যা বেশি।',bankOk:'✓ সঠিক অ্যাকাউন্ট।',mobileEmpty:'মোবাইল প্রয়োজন।',mobileLetters:'শুধু সংখ্যা।',mobileLen:'{n} সংখ্যা। ১০ দরকার।',mobileStart:'৬-৯ দিয়ে শুরু।',mobileOk:'✓ সঠিক মোবাইল।',fixErrors:'⚠️ ঠিক করুন:'}},
+  Telugu:{tagline:'ప్రభుత్వ ఫారాలు మీ భాషలో.',mainBtn:'📄 ఫారం ఎంచుకోండి →',cameraBtn:'📷 స్కాన్',uploadTitle:'PDF / చిత్రం అప్‌లోడ్',uploadSub:'ఫైల్ ఎంచుకోండి',ocrOk:'ఫారం సిద్ధం (Offline)',ocrSub:' 6 ఫీల్డ్‌లు',startBtn:'🎙️ ఫారం నింపడం ప్రారంభించండి →',fLabels:['పూర్తి పేరు','ఆధార్ నంబర్','గ్రామం/నగరం','పుట్టిన తేదీ','బ్యాంక్ అకౌంట్','మొబైల్ నంబర్'],questions:['మీ పూర్తి పేరు?','12 అంకెల ఆధార్?','గ్రామం లేదా నగరం?','పుట్టిన తేదీ (DD/MM/YYYY)?','బ్యాంక్ అకౌంట్?','10 అంకెల మొబైల్?'],tapMsg:'🎙️ మైక్ నొక్కండి',listenMsg:'🔴 వింటున్నాను…',capturedMsg:'✅ సమాధానం వచ్చింది!',yourAnswer:'మీ సమాధానం',qWord:'ఫీల్డ్',progress:'పురోగతి',fillNavTitle:'మీ వివరాలు',skipBtn:'⏭ దాటు',replayBtn:'🔊 మళ్ళీ',confirmBtn:'✓ తదుపరి →',submitBtn:'✅ సమర్పించండి',editBtn:'🎙️ మళ్ళీ నింపు',successTitle:'సమర్పించబడింది!',successSub:'దరఖాస్తు సమర్పించబడింది.',refLabel:'సూచన సంఖ్య',anotherForm:'📄 మరొక ఫారం',goHome:'🏠 హోమ్',notFilled:'నింపబడలేదు',micBadgeOff:'🎙️ మైక్ ఆన్',micBadgeOn:'✅ మైక్',micBadgeActive:'⏹ ఆపండి',micDenied:'❌ మైక్ లేదు',micNoSupport:'⌨️ Chrome',micGuideTitle:'🎙️ మైక్ ఆన్ చేయండి',micGuideSteps:[{title:'Chrome తెరవండి',text:'Google Chrome.'},{title:'🔒 క్లిక్',text:'Microphone → Allow.'},{title:'రిఫ్రెష్',text:'Ctrl+R.'},{title:'మైక్ నొక్కండి',text:'🎙️ → Allow.'}],reviewTitle:'సమీక్షించండి',reviewSub:'సమర్పించే ముందు మార్చండి',submitNote:'అన్ని వివరాలు తనిఖీ చేయండి.',smsDesc:'SMS ద్వారా రిమైండర్లు.',
+   errors:{nameEmpty:'పేరు ఖాళీగా వద్దు.',nameTooShort:'పేరు చిన్నది.',nameHasDigits:'పేరులో సంఖ్యలు వద్దు.',nameHint:'పూర్తి పేరు నమోదు చేయండి.',aadhaarEmpty:'ఆధార్ అవసరం.',aadhaarLetters:'కేవలం సంఖ్యలు.',aadhaarShort:'{n} అంకెలు. {r} జోడించండి.',aadhaarLong:'{r} తొలగించండి.',aadhaarRepeat:'అమాన్య ఆధార్.',aadhaarOk:'✓ సరైన ఆధార్.',villageEmpty:'గ్రామం అవసరం.',villageTooShort:'పేరు చిన్నది.',villageNumbers:'కేవలం సంఖ్యలు వద్దు.',dobEmpty:'తేదీ అవసరం.',dobFormat:'DD/MM/YYYY.',dobMonth:'నెల 1-12.',dobDay:'రోజు 1-31.',dobYear:'సరైన సంవత్సరం.',dobOk:'✓ వయసు ~{age}.',bankEmpty:'బ్యాంక్ అవసరం.',bankLetters:'కేవలం సంఖ్యలు.',bankShort:'{n} అంకెలు. 9-18 వేండు.',bankLong:'సంఖ్యలు తక్కువ.',bankOk:'✓ సరైన అకౌంట్.',mobileEmpty:'మొబైల్ అవసరం.',mobileLetters:'కేవలం సంఖ్యలు.',mobileLen:'{n} అంకెలు. 10 కావాలి.',mobileStart:'6-9 తో మొదలు.',mobileOk:'✓ సరైన మొబైల్.',fixErrors:'⚠️ సరిచేయండి:'}},
+  Marathi:{tagline:'सरकारी फॉर्म तुमच्या भाषेत।',mainBtn:'📄 फॉर्म निवडा →',cameraBtn:'📷 स्कॅन',uploadTitle:'PDF / फोटो अपलोड',uploadSub:'फाईल निवडा',ocrOk:'फॉर्म तयार (Offline)',ocrSub:' 6 फील्ड',startBtn:'🎙️ फॉर्म भरायला सुरुवात →',fLabels:['पूर्ण नाव','आधार क्रमांक','गाव/शहर','जन्मतारीख','बँक खाते','मोबाईल क्रमांक'],questions:['तुमचे पूर्ण नाव?','12 अंकी आधार?','गाव किंवा शहर?','जन्मतारीख (DD/MM/YYYY)?','बँक खाते क्रमांक?','10 अंकी मोबाईल?'],tapMsg:'🎙️ मायक दाबा',listenMsg:'🔴 ऐकत आहे…',capturedMsg:'✅ उत्तर मिळाले!',yourAnswer:'तुमचे उत्तर',qWord:'फील्ड',progress:'प्रगती',fillNavTitle:'माहिती भरा',skipBtn:'⏭ वगळा',replayBtn:'🔊 पुन्हा',confirmBtn:'✓ पुढे →',submitBtn:'✅ सादर करा',editBtn:'🎙️ पुन्हा भरा',successTitle:'फॉर्म सादर झाला!',successSub:'अर्ज यशस्वी.',refLabel:'संदर्भ क्रमांक',anotherForm:'📄 दुसरा फॉर्म',goHome:'🏠 होम',notFilled:'भरले नाही',micBadgeOff:'🎙️ माइक चालू',micBadgeOn:'✅ माइक',micBadgeActive:'⏹ थांबवा',micDenied:'❌ परवानगी नाही',micNoSupport:'⌨️ Chrome',micGuideTitle:'🎙️ मायक्रोफोन चालू करा',micGuideSteps:[{title:'Chrome उघडा',text:'Google Chrome.'},{title:'🔒 क्लिक',text:'Microphone → Allow.'},{title:'रिफ्रेश',text:'Ctrl+R.'},{title:'माइक दाबा',text:'🎙️ → Allow.'}],reviewTitle:'तपासा',reviewSub:'सादर करण्यापूर्वी बदला',submitNote:'सर्व माहिती तपासा।',smsDesc:'SMS आठवण मिळवा।',
+   errors:{nameEmpty:'नाव रिकामे नको.',nameTooShort:'नाव खूप लहान.',nameHasDigits:'नावात संख्या नको.',nameHint:'पूर्ण नाव टाका.',aadhaarEmpty:'आधार आवश्यक.',aadhaarLetters:'फक्त अंक.',aadhaarShort:'{n} अंक. {r} टाका.',aadhaarLong:'{r} काढा.',aadhaarRepeat:'अवैध आधार.',aadhaarOk:'✓ योग्य आधार.',villageEmpty:'गाव/शहर आवश्यक.',villageTooShort:'नाव लहान.',villageNumbers:'फक्त संख्या नको.',dobEmpty:'तारीख आवश्यक.',dobFormat:'DD/MM/YYYY.',dobMonth:'महिना 1-12.',dobDay:'दिवस 1-31.',dobYear:'योग्य वर्ष.',dobOk:'✓ वय ~{age}.',bankEmpty:'बँक खाते आवश्यक.',bankLetters:'फक्त अंक.',bankShort:'{n} अंक. 9-18 हवे.',bankLong:'अंक जास्त.',bankOk:'✓ योग्य खाते.',mobileEmpty:'मोबाईल आवश्यक.',mobileLetters:'फक्त अंक.',mobileLen:'{n} अंक. 10 हवे.',mobileStart:'6-9 ने सुरू.',mobileOk:'✓ योग्य मोबाईल.',fixErrors:'⚠️ सुधारा:'}},
+  Kannada:{tagline:'ಸರ್ಕಾರಿ ಫಾರ್ಮ್‌ಗಳು ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ.',mainBtn:'📄 ಫಾರ್ಮ್ ಆಯ್ಕೆ →',cameraBtn:'📷 ಸ್ಕ್ಯಾನ್',uploadTitle:'PDF / ಚಿತ್ರ ಅಪ್‌ಲೋಡ್',uploadSub:'ಫೈಲ್ ಆಯ್ಕೆ',ocrOk:'ಫಾರ್ಮ್ ಸಿದ್ಧ (Offline)',ocrSub:' 6 ಕ್ಷೇತ್ರಗಳು',startBtn:'🎙️ ಫಾರ್ಮ್ ತುಂಬಲು ಪ್ರಾರಂಭ →',fLabels:['ಪೂರ್ಣ ಹೆಸರು','ಆಧಾರ್ ಸಂಖ್ಯೆ','ಗ್ರಾಮ/ನಗರ','ಹುಟ್ಟಿದ ದಿನಾಂಕ','ಬ್ಯಾಂಕ್ ಖಾತೆ','ಮೊಬೈಲ್ ಸಂಖ್ಯೆ'],questions:['ನಿಮ್ಮ ಪೂರ್ಣ ಹೆಸರು?','12 ಅಂಕಿ ಆಧಾರ್?','ಗ್ರಾಮ ಅಥವಾ ನಗರ?','ಹುಟ್ಟಿದ ದಿನಾಂಕ (DD/MM/YYYY)?','ಬ್ಯಾಂಕ್ ಖಾತೆ?','10 ಅಂಕಿ ಮೊಬೈಲ್?'],tapMsg:'🎙️ ಮೈಕ್ ಒತ್ತಿ',listenMsg:'🔴 ಕೇಳುತ್ತಿದ್ದೇನೆ…',capturedMsg:'✅ ಉತ್ತರ ಸಿಕ್ಕಿತು!',yourAnswer:'ನಿಮ್ಮ ಉತ್ತರ',qWord:'ಕ್ಷೇತ್ರ',progress:'ಪ್ರಗತಿ',fillNavTitle:'ವಿವರಗಳನ್ನು ತುಂಬಿ',skipBtn:'⏭ ಬಿಡಿ',replayBtn:'🔊 ಮತ್ತೆ',confirmBtn:'✓ ಮುಂದೆ →',submitBtn:'✅ ಸಲ್ಲಿಸಿ',editBtn:'🎙️ ಮತ್ತೆ ತುಂಬಿ',successTitle:'ಸಲ್ಲಿಸಲಾಯಿತು!',successSub:'ಅರ್ಜಿ ಸಲ್ಲಿಸಲಾಗಿದೆ.',refLabel:'ಉಲ್ಲೇಖ ಸಂಖ್ಯೆ',anotherForm:'📄 ಮತ್ತೊಂದು ಫಾರ್ಮ್',goHome:'🏠 ಮುಖಪುಟ',notFilled:'ತುಂಬಿಲ್ಲ',micBadgeOff:'🎙️ ಮೈಕ್ ಆನ್',micBadgeOn:'✅ ಮೈಕ್',micBadgeActive:'⏹ ನಿಲ್ಲಿಸಿ',micDenied:'❌ ಮೈಕ್ ಇಲ್ಲ',micNoSupport:'⌨️ Chrome',micGuideTitle:'🎙️ ಮೈಕ್ ಆನ್ ಮಾಡಿ',micGuideSteps:[{title:'Chrome ತೆರೆಯಿರಿ',text:'Google Chrome.'},{title:'🔒 ಕ್ಲಿಕ್',text:'Microphone → Allow.'},{title:'ರಿಫ್ರೆಶ್',text:'Ctrl+R.'},{title:'ಮೈಕ್ ಒತ್ತಿ',text:'🎙️ → Allow.'}],reviewTitle:'ಪರಿಶೀಲಿಸಿ',reviewSub:'ಸಲ್ಲಿಸುವ ಮೊದಲು ಬದಲಾಯಿಸಿ',submitNote:'ಎಲ್ಲಾ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.',smsDesc:'SMS ಜ್ಞಾಪಕ ಪಡೆಯಿರಿ.',
+   errors:{nameEmpty:'ಹೆಸರು ಖಾಲಿ ಬೇಡ.',nameTooShort:'ಹೆಸರು ಚಿಕ್ಕದು.',nameHasDigits:'ಹೆಸರಿನಲ್ಲಿ ಸಂಖ್ಯೆ ಬೇಡ.',nameHint:'ಪೂರ್ಣ ಹೆಸರು ನಮೂದಿಸಿ.',aadhaarEmpty:'ಆಧಾರ್ ಅಗತ್ಯ.',aadhaarLetters:'ಕೇವಲ ಸಂಖ್ಯೆಗಳು.',aadhaarShort:'{n} ಅಂಕಿ. {r} ಸೇರಿಸಿ.',aadhaarLong:'{r} ತೆಗೆದುಹಾಕಿ.',aadhaarRepeat:'ಅಮಾನ್ಯ ಆಧಾರ್.',aadhaarOk:'✓ ಸರಿ.',villageEmpty:'ಗ್ರಾಮ ಅಗತ್ಯ.',villageTooShort:'ಹೆಸರು ಚಿಕ್ಕದು.',villageNumbers:'ಕೇವಲ ಸಂಖ್ಯೆ ಬೇಡ.',dobEmpty:'ದಿನಾಂಕ ಅಗತ್ಯ.',dobFormat:'DD/MM/YYYY.',dobMonth:'ತಿಂಗಳು 1-12.',dobDay:'ದಿನ 1-31.',dobYear:'ಸರಿಯಾದ ವರ್ಷ.',dobOk:'✓ ವಯಸ್ಸು ~{age}.',bankEmpty:'ಬ್ಯಾಂಕ್ ಅಗತ್ಯ.',bankLetters:'ಕೇವಲ ಸಂಖ್ಯೆ.',bankShort:'{n} ಅಂಕಿ. 9-18 ಬೇಕು.',bankLong:'ಹೆಚ್ಚು ಅಂಕಿ.',bankOk:'✓ ಸರಿ.',mobileEmpty:'ಮೊಬೈಲ್ ಅಗತ್ಯ.',mobileLetters:'ಕೇವಲ ಸಂಖ್ಯೆ.',mobileLen:'{n} ಅಂಕಿ. 10 ಬೇಕು.',mobileStart:'6-9 ರಿಂದ ಪ್ರಾರಂಭ.',mobileOk:'✓ ಸರಿ.',fixErrors:'⚠️ ಸರಿಪಡಿಸಿ:'}}
+};
+
+/* ═══════════════════════════════════════════════════
+   VOICE FILL
+═══════════════════════════════════════════════════ */
+function startVoiceFill() {
+  currentField = 1;
+  document.getElementById('answer-input').value = '';
+  goTo(4);
+  loadField(1);
+}
+
+function loadField(n) {
+  var L = LANG[selectedLang];
+  var f = FIELDS[n-1];
+  document.getElementById('q-label-word').textContent = L.qWord;
+  document.getElementById('q-num').textContent = n;
+  document.getElementById('q-english').textContent = f.engQ;
+  document.getElementById('q-native').textContent = L.questions[n-1] || '';
+  document.getElementById('q-dialect').textContent = selectedDialect ? '(' + selectedDialect + ')' : '';
+  document.getElementById('voice-field-indicator').textContent = L.qWord + ' ' + n + ' / ' + TOTAL_FIELDS;
+  // Progress
+  var pct = Math.round(((n-1)/TOTAL_FIELDS)*100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '%';
+  // Progress steps
+  for (var i=1;i<=TOTAL_FIELDS;i++) {
+    var el=document.getElementById('ps-'+i);
+    if(!el)continue;
+    el.className='prog-step'+(i<n?' done':i===n?' current':'');
+  }
+  // Input
+  var inp = document.getElementById('answer-input');
+  inp.type = f.inputType;
+  inp.placeholder = f.placeholder[selectedLang] || f.engLabel;
+  inp.value = filledAnswers[n] || '';
+  inp.maxLength = f.counter || 9999;
+  onAnswerInput(inp.value);
+  document.getElementById('val-bar').className = 'val-bar-desk';
+  document.getElementById('val-msg').textContent = '';
+  document.getElementById('val-msg').className = 'val-msg-desk';
+  document.getElementById('char-counter').textContent = '';
+  document.getElementById('live-transcript').textContent = 'Speak into your microphone — transcription appears here in real time…';
+  document.getElementById('live-dot').classList.remove('active');
+  // Field tracker
+  for (var j=1;j<=TOTAL_FIELDS;j++) {
+    var ft=document.getElementById('ft-'+j);
+    if(!ft)continue;
+    ft.className='ft-item'+(j<n&&filledAnswers[j]?' done':j===n?' current':'');
+    var ftv=document.getElementById('ftv-'+j);
+    if(ftv) ftv.textContent=filledAnswers[j]?filledAnswers[j].substring(0,12)+(filledAnswers[j].length>12?'…':''):'—';
+    var ftl=document.getElementById('ftl-'+j);
+    if(ftl) ftl.textContent=L.fLabels[j-1]||'Field '+j;
+  }
+  // Mic badge
+  updateMicBadge();
+  // Auto-speak question
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(f.engQ + '. ' + (L.questions[n-1]||''));
+    u.lang = MIC_CODES[selectedLang] || 'en-IN';
+    window.speechSynthesis.speak(u);
+  }
+  inp.focus();
+}
+
+function onAnswerInput(val) {
+  var L = LANG[selectedLang];
+  var f = FIELDS[currentField-1];
+  var confirmBtn = document.getElementById('confirm-btn');
+  if (!val) {
+    document.getElementById('val-bar').className='val-bar-desk';
+    document.getElementById('val-msg').textContent='';
+    document.getElementById('val-msg').className='val-msg-desk';
+    if(confirmBtn){confirmBtn.disabled=true;confirmBtn.style.opacity='0.4';}
+    return;
+  }
+  var r = f.validate(val, L.errors);
+  var vb = document.getElementById('val-bar');
+  var vm = document.getElementById('val-msg');
+  vb.className = 'val-bar-desk ' + (r.ok?'ok':'err');
+  vm.className = 'val-msg-desk ' + (r.ok?'ok':'err');
+  vm.textContent = r.ok ? (r.msg||'✓') : r.msg;
+  if(r.ok && r.hint) vm.textContent += ' ' + r.hint;
+  if(confirmBtn){ confirmBtn.disabled=!r.ok; confirmBtn.style.opacity=r.ok?'1':'0.4'; }
+  if(f.counter) document.getElementById('char-counter').textContent = val.replace(/\D/g,'').length + ' / ' + f.counter;
+}
+
+/* ═══════════════════════════════════════════════════
+   MIC
+═══════════════════════════════════════════════════ */
+function toggleMic() {
+  if (micActive) { stopRec(false); return; }
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showMicGuide(); return; }
+  navigator.mediaDevices.getUserMedia({audio:true})
+    .then(function(s) { s.getTracks().forEach(function(t){t.stop();}); micGranted=true; updateMicBadge(); startRec(SR); })
+    .catch(function() { document.getElementById('voice-status').textContent=LANG[selectedLang].micDenied; showMicGuide(); });
+}
+
+function updateMicBadge() {
+  var L = LANG[selectedLang];
+  var badge = document.getElementById('mic-badge');
+  var sbar = document.getElementById('mic-badge-sidebar');
+  var txt = micActive ? (L.micBadgeActive||'⏹ Stop') : (micGranted ? (L.micBadgeOn||'✅ Mic Ready') : (L.micBadgeOff||'🎙️ Enable Mic'));
+  if(badge) badge.textContent = txt;
+  if(sbar) sbar.textContent = txt;
+}
+
+function startRec(SR) {
+  var L = LANG[selectedLang];
+  recognition = new SR();
+  recognition.lang = MIC_CODES[selectedLang] || 'hi-IN';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  micActive = true;
+  document.getElementById('mic-outer').classList.add('listening');
+  document.getElementById('mic-btn').textContent = '⏹️';
+  document.getElementById('mic-btn').style.background = 'linear-gradient(135deg,#CC0000,#FF4444)';
+  document.getElementById('voice-status').textContent = L.listenMsg;
+  document.getElementById('live-dot').classList.add('active');
+  document.querySelectorAll('.wave-bar-desk').forEach(function(b){b.classList.add('active');});
+  updateMicBadge();
+  recognition.onresult = function(e) {
+    var interim = '', final_txt = '';
+    for (var i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final_txt += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    var display = final_txt || interim;
+    document.getElementById('live-transcript').innerHTML = '<em>' + display + '</em>';
+    document.getElementById('mic-realtime').textContent = interim ? '…' + interim : (final_txt ? '✓ ' + final_txt : '—');
+    if (final_txt || interim) {
+      document.getElementById('answer-input').value = display.trim();
+      onAnswerInput(display.trim());
+    }
+  };
+  recognition.onend = function() { stopRec(true); };
+  recognition.onerror = function(e) {
+    var msgs = {'not-allowed':LANG[selectedLang].micDenied,'no-speech':'No speech detected','audio-capture':'No mic found'};
+    document.getElementById('voice-status').textContent = msgs[e.error] || 'Mic error: ' + e.error;
+    if (e.error === 'not-allowed') showMicGuide();
+    stopRec(false);
+  };
+  try { recognition.start(); } catch(e) { stopRec(false); }
+}
+
+function stopRec(done) {
+  var L = LANG[selectedLang];
+  micActive = false;
+  if (recognition) { try { recognition.abort(); } catch(e){} recognition = null; }
+  document.getElementById('mic-outer').classList.remove('listening');
+  document.getElementById('mic-btn').textContent = '🎙️';
+  document.getElementById('mic-btn').style.background = 'linear-gradient(135deg,var(--saffron),#FF5500)';
+  document.querySelectorAll('.wave-bar-desk').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('live-dot').classList.remove('active');
+  document.getElementById('mic-realtime').textContent = '—';
+  updateMicBadge();
+  var val = document.getElementById('answer-input').value.trim();
+  document.getElementById('voice-status').textContent = done&&val ? L.capturedMsg : L.tapMsg;
+}
+
+function showMicGuide() {
+  var L = LANG[selectedLang];
+  var html = '';
+  (L.micGuideSteps||[]).forEach(function(s,i) {
+    html += '<div class="mgm-step"><div class="mgm-step-num">'+(i+1)+'</div><div><div class="mgm-step-title">'+s.title+'</div><div class="mgm-step-text">'+s.text+'</div></div></div>';
+  });
+  document.getElementById('mic-guide-content').innerHTML = html;
+  document.getElementById('mgm-title').textContent = L.micGuideTitle || '🎙️ Enable Microphone';
+  document.getElementById('mic-guide').classList.add('active');
+}
+
+function tryMicNow() {
+  document.getElementById('mic-guide').classList.remove('active');
+  toggleMic();
+}
+
+/* ═══════════════════════════════════════════════════
+   CONFIRM / SKIP / REPLAY
+═══════════════════════════════════════════════════ */
+function confirmAnswer() {
+  var val = document.getElementById('answer-input').value.trim();
+  if (!val) return;
+  var L = LANG[selectedLang];
+  var r = FIELDS[currentField-1].validate(val, L.errors);
+  if (!r.ok) return;
+  filledAnswers[currentField] = val;
+  // Update field item on screen 3
+  var fi=document.getElementById('fi-'+currentField);
+  if(fi){fi.classList.add('filled');var fn=document.getElementById('fn-'+currentField);if(fn)fn.style.background='var(--green)';}
+  var fv=document.getElementById('fv-'+currentField);
+  if(fv){fv.textContent=val;fv.className='fid-value';}
+  var fc=document.getElementById('fc-'+currentField);
+  if(fc)fc.textContent='✅';
+  // Update review
+  var ri=document.getElementById('ri-'+currentField);
+  if(ri){ri.value=val;ri.className='re-input-desk ok';}
+  // wizard step done
+  var wn=document.getElementById('wn-'+currentField);
+  if(wn)wn.classList.add('done');
+  // Stop mic
+  if(micActive) stopRec(false);
+  if (currentField < TOTAL_FIELDS) {
+    currentField++;
+    document.getElementById('answer-input').value = '';
+    loadField(currentField);
+  } else {
+    document.getElementById('progress-fill').style.width='100%';
+    document.getElementById('progress-pct').textContent='100%';
+    setTimeout(function(){goTo(5);},350);
+  }
+}
+
+function skipField() {
+  if(micActive)stopRec(false);
+  if (currentField < TOTAL_FIELDS) { currentField++; document.getElementById('answer-input').value=''; loadField(currentField); }
+  else goTo(5);
+}
+
+function replayQuestion() {
+  var L = LANG[selectedLang];
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(FIELDS[currentField-1].engQ + '. ' + (L.questions[currentField-1]||''));
+    u.lang = MIC_CODES[selectedLang] || 'en-IN';
+    window.speechSynthesis.speak(u);
+  }
+  document.getElementById('voice-status').textContent = '🔊 Playing…';
+  setTimeout(function(){document.getElementById('voice-status').textContent=LANG[selectedLang].tapMsg;},2500);
+}
+
+function goBackToFill() {
+  goTo(4);
+  loadField(currentField <= TOTAL_FIELDS ? currentField : 1);
+}
+
+/* ═══════════════════════════════════════════════════
+   REVIEW
+═══════════════════════════════════════════════════ */
+function syncFromReview(i, val) {
+  var L = LANG[selectedLang];
+  var ri = document.getElementById('ri-'+i);
+  var r = FIELDS[i-1].validate(val, L.errors);
+  if (val && r.ok) {
+    ri.className='re-input-desk ok'; filledAnswers[i]=val;
+    var fv=document.getElementById('fv-'+i); if(fv){fv.textContent=val;fv.className='fid-value';}
+    var fi=document.getElementById('fi-'+i); if(fi)fi.classList.add('filled');
+    var fn=document.getElementById('fn-'+i); if(fn)fn.style.background='var(--green)';
+    var fc=document.getElementById('fc-'+i); if(fc)fc.textContent='✅';
+    var ftv=document.getElementById('ftv-'+i); if(ftv)ftv.textContent=val.substring(0,12);
+  } else {
+    ri.className=val?'re-input-desk err':'re-input-desk';
+    if(!val){filledAnswers[i]=null;var fv2=document.getElementById('fv-'+i);if(fv2){fv2.textContent=L.notFilled;fv2.className='fid-value empty';}}
+  }
+  checkReviewErrors();
+}
+
+function checkReviewErrors() {
+  var L = LANG[selectedLang], errs = [];
+  for (var i=1;i<=TOTAL_FIELDS;i++) {
+    var v=document.getElementById('ri-'+i).value.trim();
+    if(v){var r=FIELDS[i-1].validate(v,L.errors);if(!r.ok)errs.push(FIELDS[i-1].engLabel+': '+r.msg);}
+  }
+  var el=document.getElementById('review-errors');
+  if(errs.length) el.innerHTML='<div style="background:rgba(255,68,68,0.07);border:1px solid rgba(255,68,68,0.25);border-radius:10px;padding:12px 14px;font-size:12px;color:#FF8080;margin-top:8px;"><strong>'+L.errors.fixErrors+'</strong><ul style="margin:8px 0 0 16px;">'+errs.map(function(e){return'<li style="margin-bottom:4px;">'+e+'</li>';}).join('')+'</ul></div>';
+  else el.innerHTML='';
+}
+
+/* ═══════════════════════════════════════════════════
+   SMS
+═══════════════════════════════════════════════════ */
+function validateSMSMobile(v) {
+  var d=v.replace(/\D/g,'');
+  var msg=document.getElementById('sms-mobile-msg');
+  if(!d){msg.textContent='';return;}
+  if(d.length<10)msg.textContent='Enter 10-digit mobile number';
+  else if(d.length===10&&/^[6789]/.test(d))msg.textContent='✓ Valid';
+  else if(d.length===10)msg.textContent='Must start with 6,7,8 or 9';
+  else msg.textContent='Too many digits';
+}
+
+function setSMSAlert(pref) {
+  smsAlertPref = pref;
+  document.querySelectorAll('.sms-btn').forEach(function(b){b.classList.remove('active-sms');});
+  var id='sms-'+(pref==='3days'?'3d':pref==='1week'?'1w':'1m');
+  document.getElementById(id).classList.add('active-sms');
+}
+
+function registerSMS() {
+  var mob=document.getElementById('sms-mobile').value.replace(/\D/g,'');
+  if(mob.length!==10||!/^[6789]/.test(mob)){
+    document.getElementById('sms-status').textContent='⚠️ Enter a valid 10-digit mobile.';
+    document.getElementById('sms-status').style.color='#FF8080';
+    return;
+  }
+  document.getElementById('sms-status').textContent='✅ SMS alerts registered for +91 '+mob+'!';
+  document.getElementById('sms-status').style.color='#90EE90';
+  document.getElementById('sms-register-btn').textContent='✅ Registered';
+  document.getElementById('sms-register-btn').style.background='var(--green)';
+  var pref=smsAlertPref==='3days'?'3 days':smsAlertPref==='1week'?'1 week':'1 month';
+  document.getElementById('sms-confirm-text').textContent='Alerts for +91 '+mob+' — '+pref+' before deadline';
+  document.getElementById('sms-confirm-box').style.display='block';
+}
+
+/* ═══════════════════════════════════════════════════
+   STATUS TRACKER
+═══════════════════════════════════════════════════ */
+var STATUS_STEPS=[
+  {label:'Form Submitted',sub:'Application received',state:'done'},
+  {label:'Identity Verification',sub:'Aadhaar & PAN check in progress',state:'active'},
+  {label:'Document Review',sub:'Govt officer review pending',state:'pending'},
+  {label:'Approval',sub:'Department decision',state:'pending'},
+  {label:'Benefit Released',sub:'Payment / service delivery',state:'pending'}
+];
+function renderStatusTracker(){
+  var html='';
+  STATUS_STEPS.forEach(function(s,i){
+    var dot=s.state==='done'?'✓':s.state==='active'?'⟳':'·';
+    html+='<div class="status-step-desk"><div class="std-dot '+s.state+'">'+dot+'</div><div class="std-content"><div class="std-title">'+s.label+'</div><div class="std-sub">'+s.sub+'</div></div></div>';
+    if(i<STATUS_STEPS.length-1)html+='<div class="std-line'+(STATUS_STEPS[i].state==='done'?' done':'')+'"></div>';
+  });
+  document.getElementById('status-tracker').innerHTML=html;
+}
+
+/* ═══════════════════════════════════════════════════
+   SUBMIT
+═══════════════════════════════════════════════════ */
+function submitForm() {
+  var L=LANG[selectedLang], errs=[];
+  for(var i=1;i<=TOTAL_FIELDS;i++){var v=document.getElementById('ri-'+i).value.trim();if(v){var r=FIELDS[i-1].validate(v,L.errors);if(!r.ok)errs.push(FIELDS[i-1].engLabel);}}
+  if(errs.length){checkReviewErrors();return;}
+  var prefix=selectedFormName.replace(/\s+/g,'').substring(0,4).toUpperCase()||'FORM';
+  document.getElementById('ref-num').textContent=prefix+'-'+new Date().getFullYear()+'-'+Math.floor(10000+Math.random()*90000);
+  document.getElementById('success-title').textContent=L.successTitle;
+  document.getElementById('success-sub').textContent=L.successSub;
+  document.getElementById('ref-label').textContent=L.refLabel;
+  renderStatusTracker();
+  // SMS
+  var mob=document.getElementById('sms-mobile').value.replace(/\D/g,'');
+  if(mob.length===10&&/^[6789]/.test(mob)){
+    var pref=smsAlertPref==='3days'?'3 days':smsAlertPref==='1week'?'1 week':'1 month';
+    document.getElementById('sms-confirm-text2').textContent='Alerts for +91 '+mob+' — '+pref+' before deadline';
+    document.getElementById('sms-confirm-box2').style.display='block';
+  }
+  // Summary
+  var html='';
+  for(var j=1;j<=TOTAL_FIELDS;j++){
+    var val=document.getElementById('ri-'+j).value||filledAnswers[j]||'—';
+    html+='<div class="summary-row"><span class="sr-label">'+FIELDS[j-1].engLabel+'</span><span class="sr-val">'+val+'</span></div>';
+  }
+  document.getElementById('submitted-summary').innerHTML=html;
+  document.getElementById('success-circle').style.animation='none';
+  goTo(6);
+  setTimeout(function(){document.getElementById('success-circle').style.animation='popIn 0.5s cubic-bezier(0.18,1.5,0.5,1) forwards';},50);
+}
+
+function resetAll(){
+  filledAnswers={}; currentField=1;
+  document.getElementById('upload-preview').style.display='none';
+  document.getElementById('real-file-input').value='';
+  document.getElementById('sms-status').textContent='';
+  document.getElementById('sms-confirm-box').style.display='none';
+  document.getElementById('sms-confirm-box2').style.display='none';
+  document.getElementById('sms-register-btn').textContent='📲 Register for SMS Alerts';
+  document.getElementById('sms-register-btn').style.background='var(--navy)';
+  for(var i=1;i<=TOTAL_FIELDS;i++){
+    var ri=document.getElementById('ri-'+i);if(ri){ri.value='';ri.className='re-input-desk';}
+    var fi=document.getElementById('fi-'+i);if(fi)fi.classList.remove('filled');
+    var fv=document.getElementById('fv-'+i);if(fv){fv.textContent=LANG[selectedLang].notFilled;fv.className='fid-value empty';}
+    var fn=document.getElementById('fn-'+i);if(fn)fn.style.background='var(--navy)';
+    var fc=document.getElementById('fc-'+i);if(fc)fc.textContent='○';
+  }
+  goTo(2);
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+applyLang('Hindi');
+buildDialectRow('Hindi');
+setSMSAlert('3days');
+filterCat('all');
+(function(){
+  if(!(window.SpeechRecognition||window.webkitSpeechRecognition)){
+    document.getElementById('mic-badge').textContent='⌨️ Chrome needed for mic';
+    document.getElementById('mic-badge-sidebar').textContent='⌨️ Chrome needed for mic';
+  }
+})();
+</script>
+</body>
+</html>
